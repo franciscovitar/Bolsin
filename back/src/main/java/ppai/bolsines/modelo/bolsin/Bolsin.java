@@ -23,6 +23,15 @@ import ppai.bolsines.modelo.remito.EstadoRemito;
 import ppai.bolsines.modelo.remito.Remito;
 import ppai.bolsines.modelo.usuario.Empleado;
 
+/**
+ * «entity» Bolsín del diagrama de clases. En la secuencia aparece como ":Bolsin" (al buscar los enviados)
+ * y como "selec:Bolsin" (el que eligió el EB).
+ *
+ * GRASP Experto: conoce sus remitos, su origen y destino y su historial de estados, así que responde si
+ * está enviado, si va a una CM, sus números de remito y su documentación, y se actualiza a sí mismo.
+ * Asociaciones del diagrama: remito (1..*), cambioEstado (1..*), origen y destino (ComisiónMédica).
+ * Atributos: en el diagrama nroBolsín y nroPrecinto; en el código numero y numeroPrecinto.
+ */
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Bolsin {
@@ -51,7 +60,12 @@ public class Bolsin {
     @JoinColumn(name = "bolsin_numero")
     private List<CambioEstadoBolsin> cambioEstado = new ArrayList<>();
 
-    /** true si el estado actual del bolsín es Enviado. */
+    /**
+     * Secuencia: Gestor -> :Bolsin buscarBolsinesEnviados(): boolean; el bolsín envía *sosActual() a
+     * :CambioEstadoBolsin y sosEnviado() al Actual, que se lo pregunta a :EstadoBolsin.
+     * Diferencia: en el diagrama de clases recibe (cmUsuario: ComisionMedica); acá, como en la secuencia,
+     * no recibe nada y la CM se pregunta aparte con esCmDestino.
+     */
     public boolean buscarBolsinesEnviados() {
         for (CambioEstadoBolsin ce : cambioEstado) {
             if (ce.sosActual()) {
@@ -61,41 +75,64 @@ public class Bolsin {
         return false;
     }
 
+    /** Secuencia: Gestor -> :Bolsin esCmDestino(cm: ComisionMedica): boolean (esCMDestino en el diagrama de clases). */
     public boolean esCmDestino(ComisionMedica cm) {
         return destino.equals(cm);
     }
 
-    /** A5: la opción de redirigir a otra área sólo corresponde si el destino es la CMC. */
+    /**
+     * Extensión A5 (no está en el diagrama): la opción de redirigir a otra área sólo corresponde si el
+     * destino es la CMC. Experto: el bolsín le pregunta a su destino (ComisionMedica.esCentral()).
+     */
     public boolean esDestinoCentral() {
         return destino.esCentral();
     }
 
+    /** Secuencia: Gestor -> :Bolsin getNumPrecinto(): int. */
     public int getNumPrecinto() {
         return numeroPrecinto;
     }
 
+    /**
+     * Secuencia: Gestor -> :Bolsin getOrigen(): ComisionMedica. En el diagrama, Bolsín le envía getNombre()
+     * a :ComisionMedica; acá devuelve la CM y el getNombre() lo envía el gestor.
+     */
     public ComisionMedica getOrigen() {
         return origen;
     }
 
-    /** Números de los remitos del bolsín: el bolsín le pide getNumero() a cada remito. */
+    /**
+     * Secuencia: Gestor -> selec:Bolsin buscarRemitos() y Bolsin -> :Remito *getNumero(): int.
+     * Diferencia: el diagrama de clases dice que devuelve Remito[]; acá devuelve int[] (los números),
+     * porque el *getNumero() lo envía el bolsín y así el gestor no se acopla a Remito.
+     */
     public int[] buscarRemitos() {
         return remito.stream().mapToInt(Remito::getNumero).toArray();
     }
 
-    /** Filas [nroRemito, nroDocumentacion, asunto, tipo, areaCMCDestino] de todos los remitos del bolsín. */
+    /**
+     * Secuencia: Gestor -> selec:Bolsin buscarDocumentacion(): String[][]; loop "Remitos del Bolsin" con
+     * Bolsin -> :Remito buscarDatosDocumentacion(). Cada fila es [nroRemito, nroDocumentacion, asunto,
+     * tipo, areaCMCDestino]; nroDocumentacion y areaCMCDestino son extensiones de A3/A4/A5.
+     */
     public String[][] buscarDocumentacion() {
         return remito.stream()
                 .flatMap(r -> Arrays.stream(r.buscarDatosDocumentacion()))
                 .toArray(String[][]::new);
     }
 
-    /** CU 29: comisiones médicas de origen de los remitos del bolsín; cada una recibe su notificación. */
+    /**
+     * Extensión CU 29 (no está en el diagrama): CM de origen de los remitos del bolsín (asociación origen de
+     * Remito); cada una recibe su propia notificación. No se supone que todas sean el origen del bolsín.
+     */
     public List<ComisionMedica> buscarOrigenesDocumentacion() {
         return remito.stream().map(Remito::getOrigen).distinct().toList();
     }
 
-    /** CU 29: filas [nroRemito, nroDocumentacion, asunto, estado] sólo de los remitos que envió esa CM. */
+    /**
+     * Extensión CU 29 (no está en el diagrama): filas [nroRemito, nroDocumentacion, asunto, estado] sólo de
+     * los remitos que envió esa CM, para no mezclar documentación de otra CM de origen.
+     */
     public String[][] buscarSituacionDocumentacion(ComisionMedica cmOrigen) {
         return remito.stream()
                 .filter(r -> r.getOrigen().equals(cmOrigen))
@@ -104,11 +141,13 @@ public class Bolsin {
     }
 
     /**
-     * Primero actualiza remitos y documentación; recién después cierra el cambio de estado
-     * actual del bolsín (setFechaHoraFin al CE que sosActual) y crea el nuevo (corrección del tutor).
-     * A3, A4 y A5 agregan al final el estado parcial del remito y la documentación que el EB marcó como
-     * no recibida (A3), rechazada (A4) o para redirigir (A5); vacías en el flujo descripto. El bolsín
-     * queda RecibidoEnCMDestino en todos los casos.
+     * Secuencia: Gestor -> selec:Bolsin actualizarEstado(fhActual: DateTime, estadoBolsin: EstadoBolsin,
+     * estadoRemito: EstadoRemito, responsable: Empleado). Orden de la secuencia (corrección del tutor):
+     * primero self actualizarRemitos(...) (remitos y documentación); recién después setFechaHoraFin al
+     * Actual:CambioEstadoBolsin (buscado con sosActual()) y self crearCambioEstado(), que crea el
+     * Nuevo:CambioEstadoBolsin. El bolsín queda RecibidoEnCMDestino en todos los flujos.
+     * Diferencia por A3, A4 y A5: recibe al final estadoRemitoParcial, nrosNoRecibida, nrosRechazada y
+     * nrosParaRedirigir (8 parámetros contra 4 del diagrama). En el flujo descripto los arreglos van vacíos.
      */
     public void actualizarEstado(LocalDateTime fhActual, EstadoBolsin estadoBolsin, EstadoRemito estadoRemito,
             Empleado responsable, EstadoRemito estadoRemitoParcial, int[] nrosNoRecibida, int[] nrosRechazada,
@@ -123,6 +162,11 @@ public class Bolsin {
         cambioEstado.add(crearCambioEstado(fhActual, estadoBolsin, responsable));
     }
 
+    /**
+     * Secuencia: self actualizarRemitos(fhActual, estadoRemito, responsable) y el loop "Actualizar Estado
+     * Remitos" con Bolsin -> :Remito actualizarEstado(estadoRemito, fhActual, responsable). Privado, como
+     * en el diagrama de clases (-). Mismos 4 parámetros agregados que actualizarEstado.
+     */
     private void actualizarRemitos(LocalDateTime fhActual, EstadoRemito estadoRemito, Empleado responsable,
             EstadoRemito estadoRemitoParcial, int[] nrosNoRecibida, int[] nrosRechazada, int[] nrosParaRedirigir) {
         for (Remito r : remito) {
@@ -131,6 +175,12 @@ public class Bolsin {
         }
     }
 
+    /**
+     * Secuencia: self crearCambioEstado() y new(fhInicio, e, usuarioResponsable) -> Nuevo:CambioEstadoBolsin.
+     * Diferencia: en el diagrama de clases es público y sin parámetros; acá es privado y recibe los datos
+     * que necesita el new(...), para no guardarlos como atributos temporales. GRASP Creador: el bolsín
+     * contiene su historial, así que crea sus cambios de estado.
+     */
     private CambioEstadoBolsin crearCambioEstado(LocalDateTime fhInicio, EstadoBolsin e, Empleado responsable) {
         return new CambioEstadoBolsin(fhInicio, e, responsable);
     }

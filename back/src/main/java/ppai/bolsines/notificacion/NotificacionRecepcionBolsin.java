@@ -6,7 +6,8 @@ import java.util.List;
 /**
  * CU 29: lo que se le notifica a UNA comisión médica de origen: el bolsín recibido, la CM destino y
  * la situación (estado final) de la documentación que esa CM envió. No incluye documentación de
- * otras CM de origen.
+ * otras CM de origen. No está en los diagramas: es el dato que viaja por InterfazNotificacionBolsin,
+ * así el modelo no conoce el paquete de notificación.
  */
 public record NotificacionRecepcionBolsin(String emailCMOrigen, String nombreCMOrigen, int nroPrecinto,
         String nombreCMDestino, List<SituacionDocumentacion> documentacion) {

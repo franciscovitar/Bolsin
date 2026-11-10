@@ -27,14 +27,27 @@ import ppai.bolsines.repositorio.EstadoRemitoRepositorio;
 import ppai.bolsines.repositorio.SesionRepositorio;
 
 /**
- * «control» del CU 28 Registrar recepción de bolsín. Coordina el caso de uso, recuerda lo que el
- * Encargado de Bolsines va seleccionando y le manda a la pantalla los mensajes mostrarX() del
- * diagrama de secuencia.
+ * «control» GestorRegistroRecepcionBolsines del diagrama de clases y lifeline
+ * ":GestorRegistroRecepcionBolsines" del diagrama de secuencia.
+ *
+ * GRASP: Controlador del CU 28 y Fabricación Pura. Coordina el caso de uso, recuerda lo que el EB va
+ * eligiendo y le manda a la pantalla los mensajes mostrarX() del diagrama. Las reglas del dominio las
+ * resuelven las entidades (Experto): el gestor pregunta, no decide por ellas. La validez de cada
+ * cambio de estado de la documentación la resuelve el patrón State, no el gestor.
+ *
+ * Diferencias con el diagrama de clases:
+ * - Allí todos los métodos son públicos (+). Acá sólo son públicos los que recibe de la pantalla;
+ *   los que en la secuencia son mensajes a sí mismo (self) son private.
+ * - actualizarRemitoyDocumentación() figura en el diagrama de clases, pero no en la secuencia; no se
+ *   implementó (la actualización la hace selec:Bolsin.actualizarEstado).
+ * - Los repositorios, el Clock y la interfaz del CU 29 son diseño de persistencia e infraestructura:
+ *   no aparecen en los diagramas.
  */
 @Service
 @RequiredArgsConstructor
 public class GestorRegistroRecepcionBolsines {
 
+    // Opciones del paso 7 del CU (ERS v1.2). Lo que devuelve getOpcionesRecepcion().
     private static final String OPCION_CONTENIDO_IGUAL = "El contenido del bolsín es igual al registrado";
     private static final String OPCION_NO_SE_RECIBE_TODA = "No se recibe toda la documentación asociada a los remitos";
     private static final String OPCION_NO_CORRESPONDE = "Existe documentación que no corresponde al destino";
@@ -59,7 +72,12 @@ public class GestorRegistroRecepcionBolsines {
     private final EstadoRemitoRepositorio estadoRemitoRepositorio;
     private final InterfazNotificacionBolsin interfazNotificacion;
 
-    // Atributos del gestor en el diagrama de clases.
+    // Atributos del gestor. Del diagrama de clases: encargado, bolsines, opcRecepcion, fechaHoraActual,
+    // estadoRecibidoEnCMDestino y estadoRecibidoYAceptado. En el diagrama, nroPrecintoCM, origenCM y
+    // nroRemito son valores sueltos y asuntoDocumentación y tipoDocumentación son datos de una sola
+    // documentación; acá se guardan como listas (nrosPrecinto, origenes, nrosRemito, documentacion).
+    // cmUsuario (resultado de buscarCMUsuario) y bolsinSeleccionado (el "selec:Bolsin" de la secuencia)
+    // no figuran como atributos en el diagrama.
     private Empleado encargado;
     private ComisionMedica cmUsuario;
     private List<Bolsin> bolsines;
@@ -77,8 +95,13 @@ public class GestorRegistroRecepcionBolsines {
     private int[] nrosDocumentacionNoRecibida;
     private int[] nrosDocumentacionRechazada;
     private int[] nrosDocumentacionParaRedirigir;
-    private EstadoRemito estadoRecibidoYAceptadoParcial;
+    private EstadoRemito estadoRecibidoYAceptadoParcial; // extensión A3/A4
 
+    /**
+     * Secuencia: Pantalla -> Gestor opcRegistrarRecepcionBolsin(). Pasos 1 a 4 del CU:
+     * buscarUsuarioLogueado(), buscarCMUsuario(), mostrarCM(nombre), buscarBolsinesEnviados() y
+     * mostrarBolsinesEnviadosParaSeleccion(...).
+     */
     @Transactional(readOnly = true)
     public void opcRegistrarRecepcionBolsin() {
         finCU(); // descarta un registro anterior que el EB canceló sin terminar (Obs. 1 del CU)
@@ -89,6 +112,11 @@ public class GestorRegistroRecepcionBolsines {
         pantalla.mostrarBolsinesEnviadosParaSeleccion(nrosPrecinto, origenes);
     }
 
+    /**
+     * Secuencia: Pantalla -> Gestor tomarSeleccionBolsin(nroPrecinto: int). Pasos 5 a 7: buscarRemitos(),
+     * buscarDocumentacion(), mostrarNumRemitosyDocumentacionAsociada(...), getOpcionesRecepcion() y
+     * mostrarOpcionesRecepcionParaSeleccion(...). El bolsín elegido es el "selec:Bolsin" de la secuencia.
+     */
     public void tomarSeleccionBolsin(int nroPrecinto) {
         if (bolsines == null) {
             throw new IllegalStateException("Primero hay que elegir la opción de registrar la recepción de un bolsín");
@@ -104,6 +132,14 @@ public class GestorRegistroRecepcionBolsines {
         pantalla.mostrarOpcionesRecepcionParaSeleccion(getOpcionesRecepcion());
     }
 
+    /**
+     * Secuencia: Pantalla -> Gestor tomarSeleccionOpcionRecepcion(opcion: String) y luego
+     * Gestor -> Pantalla solicitarConfirmacionRegistro(). Pasos 8 y 9 (la secuencia modela la opción 1).
+     * Extensiones: con las opciones 2, 3 y 4 (A3, A4 y A5), antes de confirmar se pide marcar
+     * documentación con solicitarSeleccionDocumentacion...(). La opción 4 sólo vale si el destino es la
+     * CMC: se le pregunta al bolsín (Experto), no se decide acá. Las comparaciones son sobre la opción
+     * que eligió el EB, nunca sobre el nombre de un estado.
+     */
     public void tomarSeleccionOpcionRecepcion(String opcion) {
         if (bolsinSeleccionado == null) {
             throw new IllegalStateException("Primero hay que seleccionar un bolsín");
@@ -131,7 +167,7 @@ public class GestorRegistroRecepcionBolsines {
     }
 
     /**
-     * A3, A4 y A5: el EB marca documentación del bolsín (mensaje nuevo, extensión del diagrama).
+     * Extensión A3, A4 y A5 (no está en la secuencia): Pantalla -> Gestor tomarSeleccionDocumentacion(...).
      * Primero se valida toda la selección: si algún número no es del bolsín (o, en A5, no tiene un
      * área de la CMC registrada en su detalle de remito), no se guarda nada.
      */
@@ -164,6 +200,15 @@ public class GestorRegistroRecepcionBolsines {
         pantalla.solicitarConfirmacionRegistro();
     }
 
+    /**
+     * Secuencia: Pantalla -> Gestor tomarConfirmacionRegistro(confirmacion: boolean) (escrito
+     * "tomarConfirmaionRegistro" en el diagrama). Pasos 10 a 12: actualizarBolsin(), llamarCasoUso29(),
+     * mostrarEjecucionExitosa() y FinCU() (finCU() en el código).
+     * Diferencia: en la secuencia mostrarEjecucionExitosa() aparece antes del «include»; acá el CU 29 va
+     * primero para no mostrar un éxito si la notificación falla. Con confirmacion = false es el flujo A6
+     * (extensión: mostrarRegistroCancelado()). Todo corre en una transacción: si algo falla, no queda nada
+     * guardado.
+     */
     @Transactional
     public void tomarConfirmacionRegistro(boolean confirmacion) {
         if (opcRecepcion == null) {
@@ -189,6 +234,11 @@ public class GestorRegistroRecepcionBolsines {
         finCU();
     }
 
+    /**
+     * Secuencia: self buscarUsuarioLogueado(). Gestor -> Activa:Sesion getUsuario(): Usuario (la Sesion
+     * a su vez le envía getUsuario() a :Usuario) y Gestor -> :Empleado *esTuUsuario(u): el "*" es este for.
+     * Obtener la sesión activa (la que no tiene fechaHoraFin) con el repositorio es diseño de persistencia.
+     */
     private void buscarUsuarioLogueado() {
         Usuario usuario = sesionRepositorio.findFirstByFechaHoraFinIsNull()
                 .orElseThrow(() -> new IllegalStateException("No hay una sesión activa"))
@@ -204,10 +254,21 @@ public class GestorRegistroRecepcionBolsines {
         }
     }
 
+    /**
+     * Secuencia: self buscarCMUsuario() y Gestor -> Logueado:Empleado obtenerCM(): ComisionMedica.
+     * Diferencia: en el diagrama el getNombre() a :ComisionMedica lo envía Empleado; acá lo envía el
+     * gestor (en opcRegistrarRecepcionBolsin), porque necesita el objeto CM y también su nombre.
+     */
     private void buscarCMUsuario() {
         cmUsuario = encargado.obtenerCM();
     }
 
+    /**
+     * Secuencia: self buscarBolsinesEnviados() y el loop "EstadosBolsin [mientras haya bolsines]":
+     * Gestor -> :Bolsin buscarBolsinesEnviados(): boolean, esCmDestino(cm), getNumPrecinto() y
+     * getOrigen() (el getNombre() lo envía el gestor; ver buscarCMUsuario). En el diagrama de clases
+     * Bolsin.buscarBolsinesEnviados recibe cmUsuario; acá se sigue a la secuencia (sin parámetro).
+     */
     private void buscarBolsinesEnviados() {
         bolsines = new ArrayList<>();
         for (Bolsin bolsin : bolsinRepositorio.findAll()) {
@@ -219,22 +280,35 @@ public class GestorRegistroRecepcionBolsines {
         origenes = bolsines.stream().map(b -> b.getOrigen().getNombre()).toArray(String[]::new);
     }
 
+    /** Secuencia: self buscarRemitos() y Gestor -> selec:Bolsin buscarRemitos(). */
     private void buscarRemitos() {
         nrosRemito = bolsinSeleccionado.buscarRemitos();
     }
 
+    /** Secuencia: self buscarDocumentacion() y Gestor -> selec:Bolsin buscarDocumentacion(): String[][]. */
     private void buscarDocumentacion() {
         documentacion = bolsinSeleccionado.buscarDocumentacion();
     }
 
+    /** Secuencia: self getOpcionesRecepcion(). En el diagrama de clases devuelve void; acá String[]. */
     private String[] getOpcionesRecepcion() {
         return OPCIONES_RECEPCION.clone();
     }
 
+    /** Secuencia: self getFechaHoraActual(): datetime. La hora sale del bean Clock. */
     private LocalDateTime getFechaHoraActual() {
         return LocalDateTime.now(reloj);
     }
 
+    /**
+     * Secuencia: self actualizarBolsin(). Loop "Estado Bolsin" con *esRecibidoEnCMDestino() a
+     * :EstadoBolsin y loop de estados de remito con *esRecibidoyAceptado() a :EstadoRemito (punteros
+     * a los estados nuevos), getFechaHoraActual() y Gestor -> selec:Bolsin actualizarEstado(fhActual,
+     * estadoBolsin, estadoRemito, responsable).
+     * Diferencia por A3, A4 y A5: actualizarEstado recibe al final 4 parámetros más (estado parcial
+     * del remito y la documentación marcada), y el loop de remito también busca
+     * esRecibidoYAceptadoParcial(). En el flujo descripto los arreglos van vacíos.
+     */
     private void actualizarBolsin() {
         for (EstadoBolsin estado : estadoBolsinRepositorio.findAll()) {
             if (estado.esRecibidoEnCMDestino()) {
@@ -259,7 +333,13 @@ public class GestorRegistroRecepcionBolsines {
         bolsinRepositorio.saveAndFlush(bolsinSeleccionado);
     }
 
-    /** «include» CU 29 Notificar recepción de bolsín a la comisión médica de origen. */
+    /**
+     * Secuencia: self llamarCasoUso29() y el «include» a "29. Notificar recepción de Bolsin".
+     * Diferencia (CU 29): la secuencia muestra un solo «include»; acá se notifica una vez por cada CM de
+     * origen de los remitos, cada una sólo con la situación de su documentación (CU 28 paso 12: "a cada
+     * CM de origen que envió documentación"). El bolsín responde orígenes y situación (Experto); el gestor
+     * sólo arma el mensaje y depende de la interfaz, no de cómo se envía (Bajo Acoplamiento).
+     */
     private void llamarCasoUso29() {
         for (ComisionMedica cmOrigen : bolsinSeleccionado.buscarOrigenesDocumentacion()) {
             interfazNotificacion.notificarRecepcionBolsin(NotificacionRecepcionBolsin.de(cmOrigen.getEmail(),
@@ -268,6 +348,7 @@ public class GestorRegistroRecepcionBolsines {
         }
     }
 
+    /** Secuencia: self FinCU() (finCU() en el diagrama de clases). Olvida todo lo que eligió el EB. */
     private void finCU() {
         bolsines = null;
         nrosPrecinto = null;

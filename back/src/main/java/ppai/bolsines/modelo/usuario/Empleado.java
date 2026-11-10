@@ -9,6 +9,11 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ppai.bolsines.modelo.comisionmedica.ComisionMedica;
 
+/**
+ * «entity» Empleado del diagrama de clases (lifelines ":Empleado" y "Logueado:Empleado" de la
+ * secuencia). Es el EB logueado y el responsable que se registra en cada cambio de estado.
+ * Asociación centroMédico con ComisiónMédica.
+ */
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Empleado {
@@ -26,10 +31,15 @@ public class Empleado {
     @JoinColumn(name = "comision_medica_codigo")
     private ComisionMedica centroMedico;
 
+    /** Secuencia: Gestor -> :Empleado *esTuUsuario(u: Usuario): boolean. */
     public boolean esTuUsuario(Usuario usuario) {
         return this.usuario.equals(usuario);
     }
 
+    /**
+     * Secuencia: Gestor -> Logueado:Empleado obtenerCM(): ComisionMedica. En el diagrama, Empleado le envía
+     * además getNombre() a :ComisionMedica; acá devuelve la CM y el getNombre() lo envía el gestor.
+     */
     public ComisionMedica obtenerCM() {
         return centroMedico;
     }

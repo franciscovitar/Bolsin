@@ -6,7 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-/** Implementación de demostración: redacta el correo y lo registra en el log en lugar de enviarlo. */
+/**
+ * Implementación de demostración del CU 29 (no está en los diagramas): redacta el correo y lo registra
+ * en el log en lugar de enviarlo. Cambiarla por un envío real no afecta al gestor ni al modelo.
+ */
 @Component
 public class NotificacionBolsinLog implements InterfazNotificacionBolsin {
 
