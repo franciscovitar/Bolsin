@@ -315,6 +315,38 @@ class RegistroRecepcionBolsinIntegracionTest {
         assertEquals(List.of("RecibidaYAceptada", "RecibidoYAceptado"), estadoAlNotificar);
     }
 
+    /** Elegir otro bolsín invalida la opción y la documentación marcadas para el bolsín anterior. */
+    @Test
+    void cambiarDeBolsinInvalidaLaOpcionYLaSeleccionAnteriores() {
+        elegirOpcion(5001, OPCION_2);
+        marcar(2);
+        pantalla.tomarSeleccionBolsin(new SeleccionBolsinRequest(5005)); // sin elegir una opción nueva
+
+        assertThrows(IllegalStateException.class, // 409 en la API
+                () -> pantalla.tomarConfirmacionRegistro(new ConfirmacionRequest(true)));
+
+        for (int nro : new int[] { 1, 2, 3, 8, 9 }) {
+            assertEquals("EnBolsinEnviado", estadoDocumentacion(nro));
+        }
+        assertEquals("Enviado", estadoRemito(1001));
+        assertEquals("Enviado", estadoRemito(1006));
+        assertEquals("Enviado", estadoActualBolsin(101));
+        assertEquals("Enviado", estadoActualBolsin(105));
+        verify(notificacion, never()).notificarRecepcionBolsin(any());
+
+        pantalla.tomarSeleccionOpcionRecepcion(new SeleccionOpcionRequest(OPCION_1)); // opción válida para el 5005
+        pantalla.tomarConfirmacionRegistro(new ConfirmacionRequest(true));
+
+        assertEquals("RecibidaYAceptada", estadoDocumentacion(8));
+        assertEquals("RecibidaYAceptada", estadoDocumentacion(9));
+        assertEquals("RecibidoYAceptado", estadoRemito(1006));
+        assertEquals("RecibidoEnCMDestino", estadoActualBolsin(105));
+        assertEquals("Enviado", estadoActualBolsin(101), "el 5001 no se tocó");
+        verificarNotificacion(unicaNotificacion(), "cm.mendoza@bolsines.test", "Comisión Médica Mendoza", 5005, CORDOBA,
+                situacion(1006, 8, "Historia clínica - Paz, Eva", "RecibidaYAceptada"),
+                situacion(1006, 9, "Expediente 12/2026 - Rey, Hugo", "RecibidaYAceptada"));
+    }
+
     private NotificacionRecepcionBolsin unicaNotificacion() {
         return notificaciones(1).get(0);
     }

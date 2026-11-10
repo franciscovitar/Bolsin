@@ -126,6 +126,12 @@ public class GestorRegistroRecepcionBolsines {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
                         "No se encontró un bolsín enviado con el número de precinto " + nroPrecinto));
+        // Al elegir otro bolsín se invalidan la opción y la documentación marcadas antes: correspondían al
+        // bolsín anterior. Así no se puede confirmar este bolsín sin haberle elegido una opción (paso 8).
+        opcRecepcion = null;
+        nrosDocumentacionNoRecibida = null;
+        nrosDocumentacionRechazada = null;
+        nrosDocumentacionParaRedirigir = null;
         buscarRemitos();
         buscarDocumentacion();
         pantalla.mostrarNumRemitosyDocumentacionAsociada(nrosRemito, documentacion);
