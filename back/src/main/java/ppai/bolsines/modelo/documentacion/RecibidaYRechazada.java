@@ -6,17 +6,11 @@ import java.util.List;
 import ppai.bolsines.modelo.usuario.Empleado;
 
 /**
- * «state» RecibidaYRechazada. Patrón State, rol CONCRETE STATE. A este estado llega la documentación
- * en A4 (EnBolsinEnviado -> RecibidayRechazada).
- *
- * Transiciones que salen de él en la máquina de estados:
- * - "28.RegistrarRecepcionBolsin/redirigir()" -> ParaRedirigir: implementada abajo. Ningún flujo del CU
- *   28 la usa hoy (sirve cuando un área de la CMC rechaza y la documentación va a otra área).
- * - "31.RegistrarRevisionDeDocumentacion/revisarDocumentacion()" -> Registrada: es del CU 31, no se
- *   implementó.
- *
- * Diferencia con el diagrama de clases: allí figura redirigir(): void sin parámetros; acá tiene la
- * firma del estado abstracto (doc, historial, fhActual, responsable), que es la que puede redefinir.
+ * Estado concreto RecibidaYRechazada del patrón State.
+ * Se usa en A4 cuando una documentación no corresponde a la comisión médica destino.
+ * El diagrama permite redirigirla a otra área o revisarla. Se implementó redirigir()
+ * porque esa transición también está dibujada para el CU 28; revisarDocumentacion()
+ * corresponde a otro caso de uso.
  */
 public class RecibidaYRechazada extends EstadoDocumentacion {
 
@@ -25,7 +19,7 @@ public class RecibidaYRechazada extends EstadoDocumentacion {
         super("RecibidaYRechazada");
     }
 
-    /** Máquina de estados: RecibidayRechazada -> ParaRedirigir, "28.RegistrarRecepcionBolsin/redirigir()". */
+    /** En la máquina de estados: RecibidayRechazada -> ParaRedirigir, "28.RegistrarRecepcionBolsin/redirigir()". */
     @Override
     public void redirigir(Documentacion doc, List<CambioEstadoDocumentacion> historial,
             LocalDateTime fhActual, Empleado responsable) {

@@ -1,15 +1,10 @@
 package ppai.bolsines.modelo.documentacion;
 
 /**
- * «state» EnBolsinSaliente. Patrón State, rol CONCRETE STATE.
- *
- * Sus transiciones son de otros CU y no se implementaron:
- * - enviar() (CU 27) -> EnBolsinEnviado;
- * - removerDeBolsin() (CU 21) -> EnRemito;
- * - modificarBolsin() (CU 20) -> EnBolsinSaliente.
- *
- * En el diagrama de clases figuran enviar(), modificarBolsin(), new() y removerDeBolsin(). La clase
- * existe porque el historial de la documentación (data.sql) registra este estado.
+ * Estado concreto EnBolsinSaliente del patrón State.
+ * Representa la documentación incluida en un bolsín antes de enviarlo.
+ * Sus transiciones a EnBolsinEnviado o EnRemito pertenecen a otros casos de uso;
+ * se conservan en el modelo, pero no se implementan aquí.
  */
 public class EnBolsinSaliente extends EstadoDocumentacion {
 

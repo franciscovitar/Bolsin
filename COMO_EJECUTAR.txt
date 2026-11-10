@@ -37,7 +37,7 @@ Los comandos de este archivo son para Windows (PowerShell). Para Mac/Linux, ver 
  3. LEVANTAR EL BACK (terminal 1)
 ------------------------------------------------------------------------------
      cd back
-     .\mvnw.cmd clean install        # la primera vez tarda: baja las dependencias y corre las 24 pruebas
+     .\mvnw.cmd clean install        # la primera vez tarda: baja las dependencias y corre las 25 pruebas
      .\mvnw.cmd spring-boot:run
 
   Está listo cuando aparece:
@@ -152,7 +152,7 @@ Los comandos de este archivo son para Windows (PowerShell). Para Mac/Linux, ver 
       "Maven home path" = Use Maven wrapper.
   - En la misma sección, Importing > "JDK for importer" = 21, y Runner > "JRE" = 21.
   - Ejecutar BolsinesApplication (botón verde). Las pruebas están en src/test/java
-    (EstadoDocumentacionTest, RegistroRecepcionBolsinIntegracionTest y otras; 24 en total).
+    (EstadoDocumentacionTest, RegistroRecepcionBolsinIntegracionTest y otras; 25 en total).
   - El front se corre igual desde la terminal integrada de IntelliJ (paso 4).
 
 ------------------------------------------------------------------------------
@@ -174,7 +174,7 @@ Los comandos de este archivo son para Windows (PowerShell). Para Mac/Linux, ver 
   - "Remote host terminated the handshake", "SSL peer shut down" o dependencias en rojo en
     IntelliJ:
       El antivirus (por ejemplo, el escaneo HTTPS de AVG) corta la descarga desde Maven
-      Central. Desactivarlo un momento y volver a correr .\mvnw.cmd clean install. Después
+      Central. Revisar la conexión, el proxy y los certificados; después repetir la compilación y
       recargar Maven en IntelliJ.
   - "npm no se puede cargar porque la ejecución de scripts está deshabilitada":
       En PowerShell, una sola vez:
@@ -202,3 +202,4 @@ Los comandos de este archivo son para Windows (PowerShell). Para Mac/Linux, ver 
   docs/sesiones/                          qué se hizo en cada sesión
   docs/diferencias_codigo_diagramas.md    diferencias entre el código y los diagramas
   docs/decisiones_para_la_tutora.md       decisiones provisionales a validar
+  GUIA_CAMBIOS_DEL_PROYECTO.md           qué se agregó al proyecto

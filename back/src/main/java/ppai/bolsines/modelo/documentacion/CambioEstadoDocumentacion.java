@@ -15,16 +15,9 @@ import lombok.NoArgsConstructor;
 import ppai.bolsines.modelo.usuario.Empleado;
 
 /**
- * «entity» CambioEstadoDocumentación del diagrama de clases (lifelines ":CambioEstadoDocumentacion",
- * "Actual:CambioEstadoDocumentacion" y "Nuevo:CambioEstadoDocumentacion" de la secuencia).
- *
- * Es un registro del historial de la documentación: qué estado tuvo, desde cuándo (fechaHoraInicio),
- * hasta cuándo (fechaHoraFin; el actual no tiene fin) y qué empleado hizo el cambio (asociación con
- * Empleado, responsable, que pide la ERS). Lo crea y lo cierra el estado concreto que hace la
- * transición (ver EstadoDocumentacion.cambiarEstado).
- *
- * Los getters de paquete existen sólo para que las pruebas verifiquen fechas y responsable; no son
- * operaciones del diagrama.
+ * Historial de estados de una documentación, según el diagrama de clases.
+ * Guarda qué estado tuvo, cuándo comenzó y terminó, y qué empleado realizó
+ * la transición. El cambio actual no tiene fecha de fin.
  */
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -49,19 +42,19 @@ public class CambioEstadoDocumentacion {
     @JoinColumn(name = "responsable_id")
     private Empleado responsableCE;
 
-    /** Secuencia: new(fhInicio: DateTime, e: EstadoDocumentacion, responsable: Empleado) -> Nuevo:CambioEstadoDocumentacion. */
+    /** En la secuencia: new(fhInicio: DateTime, e: EstadoDocumentacion, responsable: Empleado) -> Nuevo:CambioEstadoDocumentacion. */
     public CambioEstadoDocumentacion(LocalDateTime fhInicio, EstadoDocumentacion e, Empleado responsable) {
         this.fechaHoraInicio = fhInicio;
         this.estado = e;
         this.responsableCE = responsable;
     }
 
-    /** Secuencia: EnBolsinEnviado -> Actual:CambioEstadoDocumentacion setFechaHoraFin(fechaHoraFin). Cierra el actual. */
+    /** En la secuencia: EnBolsinEnviado -> Actual:CambioEstadoDocumentacion setFechaHoraFin(fechaHoraFin). Cierra el actual. */
     public void setFechaHoraFin(LocalDateTime fechaHoraFin) {
         this.fechaHoraFin = fechaHoraFin;
     }
 
-    /** Secuencia: *sosActual(): boolean. El actual es el que todavía no tiene fechaHoraFin. */
+    /** En la secuencia: *sosActual(): boolean. El actual es el que todavía no tiene fechaHoraFin. */
     public boolean sosActual() {
         return fechaHoraFin == null;
     }

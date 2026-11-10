@@ -1,12 +1,10 @@
 package ppai.bolsines.modelo.documentacion;
 
 /**
- * «state» NoRecibida. Patrón State, rol CONCRETE STATE. A este estado llega la documentación en A3
- * (EnBolsinEnviado -> NoRecibida).
- *
- * Sus transiciones son de otros CU y no se implementaron: revisarDocumentacion() -> Registrada (CU 31) y
- * darDeBaja() -> DeBaja (CU 9). En el diagrama de clases figuran darDeBaja(), new() y
- * revisarDocumentacion().
+ * Estado concreto NoRecibida del patrón State.
+ * La documentación llega a este estado cuando, en A3, el encargado indica que no llegó.
+ * La máquina de estados también muestra su revisión o baja, pero esos cambios pertenecen
+ * a otros casos de uso y no se implementan en el CU 28.
  */
 public class NoRecibida extends EstadoDocumentacion {
 

@@ -1,9 +1,9 @@
 ==============================================================================
  PENDIENTE - PPAI Bolsines (DSI 2026) - CU 28 Registrar recepción de bolsín
- Última actualización: 10/11/2026 (CU 28 completo con A1-A6 y CU 29; auditoría y correcciones O1-O3)
+ Actualizado: 10/11/2026 (25 pruebas, revisión técnica cerrada y frontend actualizado)
 ==============================================================================
 
-Plan hasta la Entrega 2 (Diseño), en el orden en que conviene hacerlo.
+Tareas del TP para cerrar la Entrega 2. Lo marcado como pendiente corresponde al grupo.
 [x] hecho, [~] escrito y falta probar lo indicado, [ ] pendiente, [N/A] no aplica.
 Lo que se evalúa: consistencia con el modelado, flujo descripto + al menos 2 flujos
 alternativos funcionando, persistencia en base de datos y defensa del patrón.
@@ -22,8 +22,8 @@ Diseño de experiencia de usuario." Prevalece sobre las consignas generales (ver
        beneficio; H2 es lo que usa el repo de la cátedra y /h2-console sirve para la defensa.
 [x] 4. Front React 19 + Vite 7 + MUI 7, compila y el proxy a :8080 funciona.
 [x] 5. Probar la cadena completa (back con H2 + front). Funciona (09/11 y 10/11).
-[~] 6. Repositorio del grupo en GitHub: se subió el 09/11. El trabajo del 10/11 (A3-A5, CU 29,
-       auditoría) está en una copia local: falta integrarlo al repositorio del grupo.
+[~] 6. El trabajo actualizado está en la rama `cierre-cu28` de `franciscovitar/Bolsin`.
+       Falta que el grupo decida cómo incorporarlo a su repositorio.
 [~] 6b. Arranque en otra computadora: probado el 10/11 en una PC con Java 17 por defecto, fijando
        JAVA_HOME al JDK 21 sólo en la terminal (npm ci respeta package-lock.json). Falta en una
        PC sin nada instalado.
@@ -70,9 +70,9 @@ Todos los diagramas:
 [x] 23. data.sql: CM Central, Córdoba, Rosario y Mendoza; sesión activa de Laura Gómez (EB de
         Córdoba); bolsines enviados a Córdoba con precinto 5001, 5002 y 5005.
 [x] 24. Gestor (@Service) y Pantalla (@RestController, POST /api/registro-recepcion-bolsin/<mensaje>).
-[x] 25. Pruebas: 24 en total, todas pasan con JDK 21 (10/11):
+[x] 25. Pruebas: 25 en total, todas pasan con JDK 21 (10/11):
         EstadoDocumentacionTest (9), SeleccionBolsinResponseTest (1), NotificacionBolsinLogTest (1)
-        y RegistroRecepcionBolsinIntegracionTest (13, H2 en memoria).
+        y RegistroRecepcionBolsinIntegracionTest (14, H2 en memoria).
 [x] 26. Front: wizard con los pasos del CU, filtro por precinto / CM origen y cancelación.
 [x] 26b-26d. (09/11) Pasada contra SECUENCIA PATRON.pdf, endpoints synchronized y traspaso al grupo.
 [x] 27. Flujo descripto + TODOS los alternativos, probados de punta a punta (10/11):
@@ -91,8 +91,8 @@ Todos los diagramas:
           NO APLICA para la Entrega 2 por comunicado docente (no se pide el apartado de UX).
 [N/A] 30. Fichas de patrones de GUI y documentación formal de UX.
           NO APLICA para la Entrega 2 por comunicado docente.
-[ ] 30b. (Opcional, no evaluado) Mejora visual del front: aplicación profesional, moderna,
-        consistente e intuitiva, sin cambiar su funcionamiento (theme.js hoy es provisorio).
+[x] 30b. Se actualizó el diseño de las cinco pantallas para escritorio y móvil,
+        sin cambiar su funcionamiento ni los contratos de API.
 [ ] 31. PDF de la Entrega 2 con carátula completa, SIN apartado formal de UX:
         PPAI2026_3K5_G06_E2_Diseño.pdf. Debe incluir: identificación y justificación del patrón,
         vista estática, vista dinámica, detalles de implementación (Java 21, Spring Boot 4.1.1 +
@@ -110,9 +110,8 @@ Todos los diagramas:
 - PARA EL GRUPO: declarar o no las 9 operaciones del State de otros CU (darDeBaja, enviar,
   incluirEnBolsin, ...). AGENTS.md regla 7 dice que el abstracto declara todas; hoy están las 4
   del CU 28. Se revisa aparte.
-- PARA EL GRUPO: AGENTS.md regla 1 ("primero se corrige el diagrama") contra CONTEXTO_IA.md
-  ("los diagramas no se cambian"). Mientras tanto, los originales no se tocan y las diferencias
-  se documentan en docs/diferencias_codigo_diagramas.md.
+- PARA EL GRUPO: revisar con la tutora las diferencias entre código y diagramas definitivos.
+  Los diagramas no se cambiaron; se registran diferencias en docs/diferencias_codigo_diagramas.md.
 - RESUELTO: estados de documentación guardados por nombre con un convertidor JPA.
 - RESUELTO: sesión activa cargada en data.sql (el CU no incluye iniciar sesión).
 - RESUELTO (09/11): los * de la secuencia representan loops y quedan así.

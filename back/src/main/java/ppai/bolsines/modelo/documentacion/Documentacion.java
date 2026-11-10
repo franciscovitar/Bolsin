@@ -23,17 +23,10 @@ import lombok.NoArgsConstructor;
 import ppai.bolsines.modelo.usuario.Empleado;
 
 /**
- * «entity» Documentación del diagrama de clases y lifeline ":Documentacion" de la secuencia.
- *
- * Patrón State, rol CONTEXT: es la clase cuyo comportamiento cambia según su estado. No tiene ningún
- * if sobre el estado; cada mensaje que depende del estado lo delega en estadoActual, pasándose a sí
- * misma ("this") y su historial, tal como dibuja la secuencia:
- *   Documentacion -> EnBolsinEnviado: recibirYAceptar(this, historial, fhActual, responsable).
- *
- * Asociaciones del diagrama de clases: tipoDocumento (1), estadoActual (1) y cambioEstado (1..*).
- * Operaciones del diagrama que NO están acá porque pertenecen a otros CU: cancelarRemito, darDeBaja,
- * enviar, incluirEnBolsin, incluirEnRemito, modificarBolsin, modificarRemito, removerDeBolsin,
- * removerDeRemito y revisarDocumentacion (decisión pendiente, ver docs/decisiones_para_la_tutora.md).
+ * Documentación del diagrama de clases. Es el contexto del patrón State.
+ * Conserva su estado actual y el historial de cambios. Cuando se solicita aceptar,
+ * rechazar, marcar como no recibida o redirigir, delega la operación al estado actual.
+ * Así las decisiones sobre las transiciones quedan en las clases de estado concreto.
  */
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -87,7 +80,7 @@ public class Documentacion {
         return false;
     }
 
-    /** Secuencia: DetalleRemito -> :Documentacion getAsunto(). */
+    /** En la secuencia: DetalleRemito -> :Documentacion getAsunto(). */
     public String getAsunto() {
         return asunto;
     }
@@ -100,7 +93,7 @@ public class Documentacion {
         return estadoActual.getNombre();
     }
 
-    /** Secuencia: DetalleRemito -> :Documentacion getNombreTipo(), que a su vez envía getNombre() a :TipoDocumento. */
+    /** En la secuencia: DetalleRemito -> :Documentacion getNombreTipo(), que a su vez envía getNombre() a :TipoDocumento. */
     public String getNombreTipo() {
         return tipoDocumento.getNombre();
     }
@@ -110,9 +103,9 @@ public class Documentacion {
     // estado actual; si el estado no admite la transición, el estado la rechaza.
 
     /**
-     * Secuencia: DetalleRemito -> :Documentacion recibirYAceptar(fhActual, responsable) y
+     * En la secuencia: DetalleRemito -> :Documentacion recibirYAceptar(fhActual, responsable) y
      * Documentacion -> EnBolsinEnviado recibirYAceptar(this, historial, fhActual, responsable).
-     * Máquina de estados: EnBolsinEnviado -> RecibidayAceptada y ParaRedirigir -> RecibidayAceptada.
+     * En la máquina de estados: EnBolsinEnviado -> RecibidayAceptada y ParaRedirigir -> RecibidayAceptada.
      */
     public void recibirYAceptar(LocalDateTime fhActual, Empleado responsable) {
         estadoActual.recibirYAceptar(this, cambioEstado, fhActual, responsable);
@@ -120,31 +113,31 @@ public class Documentacion {
 
     /**
      * No está en la secuencia (que modela el flujo descripto); lo usa A4. Mismo esquema que recibirYAceptar.
-     * Máquina de estados: EnBolsinEnviado -> RecibidayRechazada y ParaRedirigir -> RecibidayRechazada.
+     * En la máquina de estados: EnBolsinEnviado -> RecibidayRechazada y ParaRedirigir -> RecibidayRechazada.
      */
     public void recibirYRechazar(LocalDateTime fhActual, Empleado responsable) {
         estadoActual.recibirYRechazar(this, cambioEstado, fhActual, responsable);
     }
 
-    /** No está en la secuencia; lo usa A3. Máquina de estados: EnBolsinEnviado -> NoRecibida. */
+    /** No está en la secuencia; lo usa A3. En la máquina de estados: EnBolsinEnviado -> NoRecibida. */
     public void registrarNoRecibida(LocalDateTime fhActual, Empleado responsable) {
         estadoActual.registrarNoRecibida(this, cambioEstado, fhActual, responsable);
     }
 
     /**
-     * No está en la secuencia; lo usa A5. Máquina de estados: EnBolsinEnviado -> ParaRedirigir y
+     * No está en la secuencia; lo usa A5. En la máquina de estados: EnBolsinEnviado -> ParaRedirigir y
      * RecibidayRechazada -> ParaRedirigir.
      */
     public void redirigir(LocalDateTime fhActual, Empleado responsable) {
         estadoActual.redirigir(this, cambioEstado, fhActual, responsable);
     }
 
-    /** Secuencia: EnBolsinEnviado -> :Documentacion setEstado(e: EstadoDocumentacion). Lo llama el estado. */
+    /** En la secuencia: EnBolsinEnviado -> :Documentacion setEstado(e: EstadoDocumentacion). Lo llama el estado. */
     public void setEstado(EstadoDocumentacion e) {
         this.estadoActual = e;
     }
 
-    /** Secuencia: EnBolsinEnviado -> :Documentacion agregarCE(ce: CambioEstadoDocumentacion). Lo llama el estado. */
+    /** En la secuencia: EnBolsinEnviado -> :Documentacion agregarCE(ce: CambioEstadoDocumentacion). Lo llama el estado. */
     public void agregarCE(CambioEstadoDocumentacion ce) {
         cambioEstado.add(ce);
     }

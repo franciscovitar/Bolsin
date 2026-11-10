@@ -6,22 +6,13 @@ import java.util.List;
 import ppai.bolsines.modelo.usuario.Empleado;
 
 /**
- * «abstract» EstadoDocumentación del diagrama de clases.
+ * Estado abstracto del patrón State, como en el diagrama de clases.
+ * Define las operaciones que necesita el CU 28; si el estado concreto no permite
+ * una transición, se rechaza. cambiarEstado() comparte la lógica de cerrar el estado
+ * anterior y registrar el nuevo con fecha y responsable.
  *
- * Patrón State, rol STATE (estado abstracto). Declara las transiciones del CU 28 con un comportamiento
- * por defecto: rechazar la transición (IllegalStateException, que la API devuelve como 409), porque
- * desde la mayoría de los estados no está permitida. Cada estado concreto (ConcreteState) redefine
- * sólo las transiciones que salen de él en la máquina de estados. Así no hace falta ningún if o switch
- * sobre el nombre del estado.
- *
- * cambiarEstado() y crearCambioEstado() son el código común a todas las transiciones (reuso por
- * herencia; en el diagrama, con visibilidad # protegida).
- *
- * Diferencia con el diagrama de clases: allí este abstracto también declara darDeBaja, enviar,
- * incluirEnBolsin, incluirEnRemito, modificarBolsin, modificarRemito, removerDeBolsin, removerDeRemito
- * y revisarDocumentacion. Son de otros CU y no se implementaron (decisión pendiente, ver
- * docs/decisiones_para_la_tutora.md, punto 10). En el diagrama, "nombre" es un atributo público;
- * acá es privado con getNombre().
+ * El diagrama también muestra operaciones de otros CU que no se implementaron.
+ * Esa diferencia está registrada en docs/diferencias_codigo_diagramas.md.
  */
 public abstract class EstadoDocumentacion {
 
@@ -61,7 +52,7 @@ public abstract class EstadoDocumentacion {
     }
 
     /**
-     * Secuencia: EnBolsinEnviado self cambiarEstado(this, historial, fhActual, responsable, nuevo).
+     * En la secuencia: EnBolsinEnviado mensaje a sí mismo cambiarEstado(this, historial, fhActual, responsable, nuevo).
      * Mismos parámetros y orden que el diagrama de clases (# cambiarEstado(doc, historial, fhActual,
      * responsable, nuevo)). Hace, en este orden, lo que dibuja la secuencia:
      * 1. *sosActual() a :CambioEstadoDocumentacion y setFechaHoraFin(fhActual) al Actual (lo cierra);
@@ -81,8 +72,8 @@ public abstract class EstadoDocumentacion {
     }
 
     /**
-     * Secuencia: self crearCambioEstado(fhInicio, nuevo, responsable): CambioEstadoDocumentacion y
-     * new(fhInicio, e, responsable) a Nuevo:CambioEstadoDocumentacion. GRASP Creador: el estado crea el
+     * En la secuencia: mensaje a sí mismo crearCambioEstado(fhInicio, nuevo, responsable): CambioEstadoDocumentacion y
+     * new(fhInicio, e, responsable) a Nuevo:CambioEstadoDocumentacion. Por Creador (GRASP), el estado crea el
      * cambio de estado porque tiene los datos para inicializarlo.
      */
     protected CambioEstadoDocumentacion crearCambioEstado(LocalDateTime fhInicio, EstadoDocumentacion nuevo,

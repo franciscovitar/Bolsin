@@ -2,8 +2,8 @@
 
 PPAI DSI 2026 · 3K5 · Grupo 06 · Actualizado al 10/11/2026
 
-Es el guion para la defensa. Recorre el flujo descripto, los seis flujos alternativos, la
-persistencia y el patrón State. Cómo instalar y levantar el proyecto está en `COMO_EJECUTAR.txt`.
+Esta guía muestra cómo probar el flujo descripto, los seis alternativos, la persistencia y el
+patrón State. Cómo instalar y levantar el proyecto está en `COMO_EJECUTAR.txt`.
 
 **Antes de empezar:** usar una terminal con **JDK 21**. Si la PC tiene varios JDK:
 `$env:JAVA_HOME = "C:\ruta\al\jdk-21"`.
@@ -137,7 +137,7 @@ Para volver a la demo normal: cortar el back y levantarlo con `.\mvnw.cmd spring
    - `RegistroRecepcionBolsinIntegracionTest`: el CU completo contra una H2 en memoria, incluido
      el contenido del CU 29.
 
-   Correrlas con `.\mvnw.cmd clean install`: **24 pruebas**.
+   Correrlas con `.\mvnw.cmd clean install`: **25 pruebas**.
 
 Material de apoyo:
 - `docs/sesiones/Sesion_01` a `Sesion_06`;

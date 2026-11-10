@@ -23,23 +23,10 @@ import ppai.bolsines.dto.SeleccionOpcionResponse;
 import ppai.bolsines.gestor.GestorRegistroRecepcionBolsines;
 
 /**
- * «boundary» PantallaRegistroRecepcionBolsines del diagrama de clases y lifeline
- * ":PantallaRegistroRecepcionBolsines" del diagrama de secuencia.
- *
- * Responsabilidad: es la frontera con el actor Encargado de Bolsines (EB). Recibe sus mensajes, se los
- * pasa al gestor y guarda lo que el gestor le pide mostrar. No decide nada del negocio.
- *
- * Cómo se implementa:
- * - Cada mensaje "EB -> Pantalla" de la secuencia es un endpoint POST con el mismo nombre
- *   (opcRegistrarRecepcionBolsin, tomarSeleccionBolsin, tomarSeleccionOpcionRecepcion,
- *   tomarConfirmacionRegistro).
- * - Cada mensaje "Gestor -> Pantalla" (mostrarCM, mostrarBolsinesEnviadosParaSeleccion, ...) es un
- *   método público que guarda lo que hay que mostrar; el endpoint lo devuelve al front (React).
- * - Diferencia con el diagrama de clases: allí los métodos de la pantalla devuelven void; acá los
- *   endpoints devuelven un record de dto con lo mostrado, porque la pantalla real se dibuja en el
- *   navegador.
- * - Es una sola pantalla para un solo EB: los endpoints son synchronized para que dos pedidos
- *   simultáneos (por ejemplo, un doble clic o React en modo desarrollo) no mezclen lo que se muestra.
+ * Pantalla del CU 28 («boundary» en el diagrama de clases).
+ * Recibe las acciones del encargado y se las pasa al Gestor. Los métodos mostrarX()
+ * corresponden a los mensajes de vuelta que aparecen en la secuencia.
+ * Para usarla desde React, esos mensajes se exponen como respuestas de la API REST.
  */
 @RestController
 @RequestMapping("/api/registro-recepcion-bolsin")
@@ -58,7 +45,7 @@ public class PantallaRegistroRecepcionBolsines {
     private String mensaje;
     private boolean seleccionarDocumentacion; // extensión A3/A4/A5: indica al front que sigue marcar documentación
 
-    /** Secuencia: EB -> Pantalla opcRegistrarRecepcionBolsin(); luego self habilitarPantalla() y Pantalla -> Gestor. */
+    /** En la secuencia: EB -> Pantalla opcRegistrarRecepcionBolsin(); luego mensaje a sí mismo habilitarPantalla() y Pantalla -> Gestor. */
     @PostMapping("/opcRegistrarRecepcionBolsin")
     public synchronized OpcRegistrarRecepcionResponse opcRegistrarRecepcionBolsin() {
         habilitarPantalla();
@@ -66,7 +53,7 @@ public class PantallaRegistroRecepcionBolsines {
         return new OpcRegistrarRecepcionResponse(nombreCM, bolsines);
     }
 
-    /** Secuencia: Pantalla self habilitarPantalla(). Limpia lo mostrado en un registro anterior. */
+    /** En la secuencia: Pantalla mensaje a sí mismo habilitarPantalla(). Limpia lo mostrado en un registro anterior. */
     public void habilitarPantalla() {
         nombreCM = null;
         bolsines = List.of();
@@ -76,13 +63,13 @@ public class PantallaRegistroRecepcionBolsines {
         seleccionarDocumentacion = false;
     }
 
-    /** Secuencia: Gestor -> Pantalla mostrarCM(nombre: String). Paso 2 del CU. */
+    /** En la secuencia: Gestor -> Pantalla mostrarCM(nombre: String). Paso 2 del CU. */
     public void mostrarCM(String nombre) {
         nombreCM = nombre;
     }
 
     /**
-     * Secuencia: Gestor -> Pantalla mostrarBolsinesEnviadosParaSeleccion(nroPrecinto: int[], origen: String[]).
+     * En la secuencia: Gestor -> Pantalla mostrarBolsinesEnviadosParaSeleccion(nroPrecinto: int[], origen: String[]).
      * Paso 4 del CU. Une los dos arreglos (misma posición = mismo bolsín) en la lista que filtra el front
      * (A1 y A2 se resuelven en el front con esa lista).
      */
@@ -92,7 +79,7 @@ public class PantallaRegistroRecepcionBolsines {
                 .toList();
     }
 
-    /** Secuencia: EB -> Pantalla tomarSeleccionBolsin(nroPrecinto: int) y Pantalla -> Gestor con el mismo nombre. Paso 5. */
+    /** En la secuencia: EB -> Pantalla tomarSeleccionBolsin(nroPrecinto: int) y Pantalla -> Gestor con el mismo nombre. Paso 5. */
     @PostMapping("/tomarSeleccionBolsin")
     public synchronized SeleccionBolsinResponse tomarSeleccionBolsin(@RequestBody SeleccionBolsinRequest request) {
         gestor.tomarSeleccionBolsin(request.nroPrecinto());
@@ -100,7 +87,7 @@ public class PantallaRegistroRecepcionBolsines {
     }
 
     /**
-     * Secuencia: Gestor -> Pantalla mostrarNumRemitosyDocumentacionAsociada(nrosRemito: int[],
+     * En la secuencia: Gestor -> Pantalla mostrarNumRemitosyDocumentacionAsociada(nrosRemito: int[],
      * documentacion: String[][]). Paso 6 (en el diagrama de clases figura como
      * mostrarNumRemitosYDocumentaciónAsociada). Extensión: cada fila trae también el número de
      * documentación (para marcarla en A3/A4/A5) y el área de la CMC (A5).
@@ -109,19 +96,19 @@ public class PantallaRegistroRecepcionBolsines {
         remitos = RemitoConDocumentacion.agrupar(nrosRemito, documentacion);
     }
 
-    /** Secuencia: Gestor -> Pantalla mostrarOpcionesRecepcionParaSeleccion(opciones: String[]). Paso 7. */
+    /** En la secuencia: Gestor -> Pantalla mostrarOpcionesRecepcionParaSeleccion(opciones: String[]). Paso 7. */
     public void mostrarOpcionesRecepcionParaSeleccion(String[] opciones) {
         this.opciones = List.of(opciones);
     }
 
-    /** Secuencia: EB -> Pantalla tomarSeleccionOpcionRecepcion(opcion: String) y Pantalla -> Gestor. Paso 8. */
+    /** En la secuencia: EB -> Pantalla tomarSeleccionOpcionRecepcion(opcion: String) y Pantalla -> Gestor. Paso 8. */
     @PostMapping("/tomarSeleccionOpcionRecepcion")
     public synchronized SeleccionOpcionResponse tomarSeleccionOpcionRecepcion(@Valid @RequestBody SeleccionOpcionRequest request) {
         gestor.tomarSeleccionOpcionRecepcion(request.opcion());
         return new SeleccionOpcionResponse(mensaje, seleccionarDocumentacion);
     }
 
-    /** Secuencia: Gestor -> Pantalla solicitarConfirmacionRegistro(). Paso 9. */
+    /** En la secuencia: Gestor -> Pantalla solicitarConfirmacionRegistro(). Paso 9. */
     public void solicitarConfirmacionRegistro() {
         mensaje = "¿Confirma el registro de la recepción del bolsín?";
         seleccionarDocumentacion = false;
@@ -156,7 +143,7 @@ public class PantallaRegistroRecepcionBolsines {
     }
 
     /**
-     * Secuencia: EB -> Pantalla tomarConfirmacionRegistro(confirmacion: boolean) y Pantalla -> Gestor
+     * En la secuencia: EB -> Pantalla tomarConfirmacionRegistro(confirmacion: boolean) y Pantalla -> Gestor
      * (en la flecha de la secuencia está escrito "tomarConfirmaionRegistro", errata). Paso 10; con
      * false es el flujo A6.
      */
@@ -166,7 +153,7 @@ public class PantallaRegistroRecepcionBolsines {
         return new MensajeResponse(mensaje);
     }
 
-    /** Secuencia: Gestor -> Pantalla mostrarEjecucionExitosa(). Paso 12. */
+    /** En la secuencia: Gestor -> Pantalla mostrarEjecucionExitosa(). Paso 12. */
     public void mostrarEjecucionExitosa() {
         mensaje = "Se registró la recepción del bolsín y se notificó a cada comisión médica de origen.";
     }

@@ -1,10 +1,9 @@
 package ppai.bolsines.modelo.documentacion;
 
 /**
- * «state» RecibidaYAceptada ("RecibidayAceptada" en la máquina de estados). Patrón State, rol CONCRETE
- * STATE. Es el estado final de la máquina: no tiene transiciones salientes, así que no redefine nada y
- * todo pedido de cambio se rechaza por el comportamiento por defecto del estado abstracto.
- * En la secuencia es el objeto que crea EnBolsinEnviado con new(): RecibidayAceptada.
+ * Estado concreto RecibidaYAceptada del patrón State.
+ * La documentación termina en este estado cuando se acepta la recepción.
+ * En la máquina de estados no tiene transiciones salientes.
  */
 public class RecibidaYAceptada extends EstadoDocumentacion {
 

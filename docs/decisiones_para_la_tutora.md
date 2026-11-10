@@ -1,10 +1,10 @@
-# Decisiones provisionales para validar con la tutora
+# Decisiones para revisar con la tutora
 
 PPAI DSI 2026 · 3K5 · Grupo 06 · Actualizado al 10/11/2026
 
-Son decisiones de diseño que tomó el grupo porque la ERS no las define, o las define de forma
-contradictoria. **Ninguna se presenta como requisito de la ERS.** Cada una indica qué dice la
-fuente, qué se hizo y qué alternativa hay.
+Estos puntos requieren una decisión del grupo o una consulta con la tutora. En algunos casos,
+la ERS no define qué hacer; en otros, distintas indicaciones no coinciden. La tabla aclara qué
+se hizo y qué alternativas existen.
 
 | # | Tema | Qué dice la ERS | Qué se implementó | Alternativa |
 |---|---|---|---|---|

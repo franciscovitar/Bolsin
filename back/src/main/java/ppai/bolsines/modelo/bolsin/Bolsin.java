@@ -24,13 +24,13 @@ import ppai.bolsines.modelo.remito.Remito;
 import ppai.bolsines.modelo.usuario.Empleado;
 
 /**
- * «entity» Bolsín del diagrama de clases. En la secuencia aparece como ":Bolsin" (al buscar los enviados)
- * y como "selec:Bolsin" (el que eligió el EB).
+ * Bolsín del diagrama de clases. En la secuencia aparece como :Bolsin cuando se
+ * buscan los enviados y como selec:Bolsin cuando el encargado elige uno.
+ * Por Experto (GRASP), conoce su origen, destino, remitos e historial y puede
+ * coordinar la actualización de los remitos al registrar la recepción.
  *
- * GRASP Experto: conoce sus remitos, su origen y destino y su historial de estados, así que responde si
- * está enviado, si va a una CM, sus números de remito y su documentación, y se actualiza a sí mismo.
- * Asociaciones del diagrama: remito (1..*), cambioEstado (1..*), origen y destino (ComisiónMédica).
- * Atributos: en el diagrama nroBolsín y nroPrecinto; en el código numero y numeroPrecinto.
+ * Para A3, A4 y A5 se agregaron parámetros a actualizarEstado().
+ * Las diferencias con el diagrama original están documentadas.
  */
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -61,7 +61,7 @@ public class Bolsin {
     private List<CambioEstadoBolsin> cambioEstado = new ArrayList<>();
 
     /**
-     * Secuencia: Gestor -> :Bolsin buscarBolsinesEnviados(): boolean; el bolsín envía *sosActual() a
+     * En la secuencia: Gestor -> :Bolsin buscarBolsinesEnviados(): boolean; el bolsín envía *sosActual() a
      * :CambioEstadoBolsin y sosEnviado() al Actual, que se lo pregunta a :EstadoBolsin.
      * Diferencia: en el diagrama de clases recibe (cmUsuario: ComisionMedica); acá, como en la secuencia,
      * no recibe nada y la CM se pregunta aparte con esCmDestino.
@@ -75,7 +75,7 @@ public class Bolsin {
         return false;
     }
 
-    /** Secuencia: Gestor -> :Bolsin esCmDestino(cm: ComisionMedica): boolean (esCMDestino en el diagrama de clases). */
+    /** En la secuencia: Gestor -> :Bolsin esCmDestino(cm: ComisionMedica): boolean (esCMDestino en el diagrama de clases). */
     public boolean esCmDestino(ComisionMedica cm) {
         return destino.equals(cm);
     }
@@ -88,13 +88,13 @@ public class Bolsin {
         return destino.esCentral();
     }
 
-    /** Secuencia: Gestor -> :Bolsin getNumPrecinto(): int. */
+    /** En la secuencia: Gestor -> :Bolsin getNumPrecinto(): int. */
     public int getNumPrecinto() {
         return numeroPrecinto;
     }
 
     /**
-     * Secuencia: Gestor -> :Bolsin getOrigen(): ComisionMedica. En el diagrama, Bolsín le envía getNombre()
+     * En la secuencia: Gestor -> :Bolsin getOrigen(): ComisionMedica. En el diagrama, Bolsín le envía getNombre()
      * a :ComisionMedica; acá devuelve la CM y el getNombre() lo envía el gestor.
      */
     public ComisionMedica getOrigen() {
@@ -102,7 +102,7 @@ public class Bolsin {
     }
 
     /**
-     * Secuencia: Gestor -> selec:Bolsin buscarRemitos() y Bolsin -> :Remito *getNumero(): int.
+     * En la secuencia: Gestor -> selec:Bolsin buscarRemitos() y Bolsin -> :Remito *getNumero(): int.
      * Diferencia: el diagrama de clases dice que devuelve Remito[]; acá devuelve int[] (los números),
      * porque el *getNumero() lo envía el bolsín y así el gestor no se acopla a Remito.
      */
@@ -111,7 +111,7 @@ public class Bolsin {
     }
 
     /**
-     * Secuencia: Gestor -> selec:Bolsin buscarDocumentacion(): String[][]; loop "Remitos del Bolsin" con
+     * En la secuencia: Gestor -> selec:Bolsin buscarDocumentacion(): String[][]; loop "Remitos del Bolsin" con
      * Bolsin -> :Remito buscarDatosDocumentacion(). Cada fila es [nroRemito, nroDocumentacion, asunto,
      * tipo, areaCMCDestino]; nroDocumentacion y areaCMCDestino son extensiones de A3/A4/A5.
      */
@@ -141,10 +141,10 @@ public class Bolsin {
     }
 
     /**
-     * Secuencia: Gestor -> selec:Bolsin actualizarEstado(fhActual: DateTime, estadoBolsin: EstadoBolsin,
+     * En la secuencia: Gestor -> selec:Bolsin actualizarEstado(fhActual: DateTime, estadoBolsin: EstadoBolsin,
      * estadoRemito: EstadoRemito, responsable: Empleado). Orden de la secuencia (corrección del tutor):
-     * primero self actualizarRemitos(...) (remitos y documentación); recién después setFechaHoraFin al
-     * Actual:CambioEstadoBolsin (buscado con sosActual()) y self crearCambioEstado(), que crea el
+     * primero mensaje a sí mismo actualizarRemitos(...) (remitos y documentación); recién después setFechaHoraFin al
+     * Actual:CambioEstadoBolsin (buscado con sosActual()) y mensaje a sí mismo crearCambioEstado(), que crea el
      * Nuevo:CambioEstadoBolsin. El bolsín queda RecibidoEnCMDestino en todos los flujos.
      * Diferencia por A3, A4 y A5: recibe al final estadoRemitoParcial, nrosNoRecibida, nrosRechazada y
      * nrosParaRedirigir (8 parámetros contra 4 del diagrama). En el flujo descripto los arreglos van vacíos.
@@ -163,7 +163,7 @@ public class Bolsin {
     }
 
     /**
-     * Secuencia: self actualizarRemitos(fhActual, estadoRemito, responsable) y el loop "Actualizar Estado
+     * En la secuencia: mensaje a sí mismo actualizarRemitos(fhActual, estadoRemito, responsable) y el loop "Actualizar Estado
      * Remitos" con Bolsin -> :Remito actualizarEstado(estadoRemito, fhActual, responsable). Privado, como
      * en el diagrama de clases (-). Mismos 4 parámetros agregados que actualizarEstado.
      */
@@ -176,9 +176,9 @@ public class Bolsin {
     }
 
     /**
-     * Secuencia: self crearCambioEstado() y new(fhInicio, e, usuarioResponsable) -> Nuevo:CambioEstadoBolsin.
+     * En la secuencia: mensaje a sí mismo crearCambioEstado() y new(fhInicio, e, usuarioResponsable) -> Nuevo:CambioEstadoBolsin.
      * Diferencia: en el diagrama de clases es público y sin parámetros; acá es privado y recibe los datos
-     * que necesita el new(...), para no guardarlos como atributos temporales. GRASP Creador: el bolsín
+     * que necesita el new(...), para no guardarlos como atributos temporales. Por Creador (GRASP), el bolsín
      * contiene su historial, así que crea sus cambios de estado.
      */
     private CambioEstadoBolsin crearCambioEstado(LocalDateTime fhInicio, EstadoBolsin e, Empleado responsable) {

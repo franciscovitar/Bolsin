@@ -2,7 +2,7 @@
 
 Diseño de Sistemas de Información · UTN FRC · 3K5 · Grupo 06
 
-Implementación del CU 28 con el rediseño por el **patrón State sobre Documentación** (Entrega 2).
+Implementación del CU 28 para la Entrega 2, con el **patrón State aplicado a Documentación**.
 Incluye el flujo descripto, los **seis flujos alternativos** (A1 a A6) y el «include» del
 **CU 29**, que notifica a cada CM de origen la situación de su documentación. Sólo se implementa
 este caso de uso.
@@ -31,15 +31,16 @@ ppai-bolsines/
 ├── front/                React + Vite + MUI (wizard con los pasos del CU)
 ├── docs/
 │   ├── catedra/          ERS, descripción del caso, consignas, modelo de dominio
-│   ├── diagramas/        diagramas de diseño originales (no se modifican) y proyectos de EA
+│   ├── diagramas/        diagramas definitivos del grupo (sin modificaciones) y proyectos de EA
 │   ├── sesiones/         registro de cada sesión de trabajo (01 a 06)
 │   ├── diferencias_codigo_diagramas.md   todas las diferencias entre el código y los diagramas
 │   └── decisiones_para_la_tutora.md      decisiones provisionales a validar
-├── AGENTS.md             reglas del proyecto (también para asistentes de IA)
+├── AGENTS.md             reglas del proyecto y del modelado
 ├── CONTEXTO_IA.md        estado del trabajo y cómo seguir
 ├── COMO_EJECUTAR.txt     paso a paso para levantarlo en una computadora nueva
 ├── GUIA_DEMOSTRACION.md  guion de la defensa (incluye A5 con su fixture)
-└── PENDIENTE.txt         plan de trabajo
+├── GUIA_CAMBIOS_DEL_PROYECTO.md  resumen de lo que se agregó
+└── PENDIENTE.txt         tareas pendientes
 ```
 
 ## Requisitos
@@ -55,7 +56,7 @@ Paso a paso completo y problemas comunes: `COMO_EJECUTAR.txt`. Guion de la demo:
 ```powershell
 # 1. Back -> http://localhost:8080 (la base H2 se crea sola en back/data)
 cd back
-.\mvnw.cmd clean install      # compila y corre las 24 pruebas
+.\mvnw.cmd clean install      # compila y corre las 25 pruebas
 .\mvnw.cmd spring-boot:run
 
 # 2. Front (otra terminal) -> http://localhost:3000

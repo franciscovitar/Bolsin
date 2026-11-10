@@ -3,10 +3,10 @@
 **PPAI DSI 2026 "Bolsines" · UTN FRC · 3K5 · Grupo 06 · Estado al 10/11/2026**
 
 > **Resumen del estado:** el CU 28 está completo: flujo descripto, los seis alternativos A1 a A6
-> y el CU 29 con la situación de la documentación. Hay 24 pruebas y todas pasan. Falta:
+> y el CU 29 con la situación de la documentación. Hay 25 pruebas y todas pasan. La revisión técnica y el rediseño visual están terminados. Falta:
 > - el PDF de la Entrega 2, sin el apartado de UX por comunicado docente;
-> - las decisiones para la tutora (`docs/decisiones_para_la_tutora.md`);
-> - integrar esta copia al repositorio del grupo.
+> - validar con la tutora las decisiones de `docs/decisiones_para_la_tutora.md`;
+> - acordar cómo integrar la rama `cierre-cu28` al repositorio del grupo.
 
 Este archivo resume todo lo necesario para retomar el trabajo desde donde quedó. Está escrito
 para que cualquier integrante se lo pase a una IA (Claude, ChatGPT, Copilot, Cursor) junto con la
@@ -34,7 +34,7 @@ Sos mi asistente para el PPAI de Diseño de Sistemas de Información (UTN FRC 20
 docs/diferencias_codigo_diagramas.md y docs/sesiones/, y respetá todas las reglas que figuran ahí
 (sobre todo: los diagramas originales NO se modifican y toda diferencia se documenta; todo en
 español; 100 % orientado a objetos; código corto y sin repeticiones).
-Tarea de hoy: <describir la tarea, por ejemplo "implementar el flujo alternativo A3">.
+Tarea de hoy: <describir la revisión o el cambio concreto que se necesita>.
 Antes de escribir código, decime qué archivos vas a tocar y por qué.
 ```
 
@@ -63,8 +63,7 @@ Igual conviene decirle que lea este archivo.
      - la defensa oral mostrando el patrón en el código.
   3. ~~UX: moodboard, mapa de empatía, user journey y patrones de GUI.~~ **No aplica a la
      Entrega 2**, por comunicado docente: "Para la 2da entrega del PPAI no se pedirá el apartado
-     correspondiente a Diseño de experiencia de usuario". Igual se quiere un front prolijo y
-     agradable; es una mejora opcional que no se evalúa.
+     correspondiente a Diseño de experiencia de usuario". Se mejoró el frontend sin cambiar la lógica del CU.
   4. PDF de la entrega: `PPAI2026_3K5_G06_E2_Diseño.pdf`, con carátula completa y **sin
      apartado de UX**. El código no se sube: se defiende.
 - **Fuentes de la cátedra:** `docs/catedra/`. Ahí están la ERS v1.2 (con el CU 28 completo en
@@ -101,12 +100,13 @@ Igual conviene decirle que lea este archivo.
 
 ## 2. Reglas del equipo (no negociables)
 
-1. **El código sigue a los diagramas; los diagramas originales NO se modifican.** Son una entrega
-   pasada con correcciones encima. Cada mensaje del diagrama de secuencia
-   (`docs/diagramas/SECUENCIA PATRON.pdf`) existe en el código con el mismo nombre y el mismo
-   emisor y receptor. A3, A4, A5 y el CU 29 agregaron mensajes y parámetros que el diagrama no
-   tiene; están todos en `docs/diferencias_codigo_diagramas.md` (sección 8). *Pendiente: AGENTS.md
-   regla 1 dice "primero se corrige el diagrama"; el grupo tiene que unificar el criterio.*
+1. **Los diagramas definitivos no se modifican.** El código debe poder contrastarse con ellos;
+   las diferencias se registran y deben justificarse, no ocultarse. Son una entrega
+   pasada con correcciones encima. Los mensajes del flujo descripto se contrastan con
+   `docs/diagramas/SECUENCIA PATRON.pdf`. Hay diferencias de nombres, firmas y emisores
+   entre los diagramas y el código. Además, A3, A4, A5 y CU 29 incorporaron mensajes nuevos.
+   Todo eso se detalla en `docs/diferencias_codigo_diagramas.md` y queda para revisar con
+   la tutora. No debe presentarse como una coincidencia exacta.
 2. Convenciones de la cátedra:
    - Pantalla = «boundary»;
    - Gestor = «control», que es una Fabricación Pura;
@@ -137,7 +137,7 @@ Detalle completo: `AGENTS.md`.
 | Back | Java 21 · Spring Boot 4.1.1 · Spring Data JPA / Hibernate 7 · Lombok · Maven (wrapper `mvnw`) |
 | Base de datos | H2 en modo archivo (`back/data/bolsines.mv.db`). Se recrea en cada arranque desde `data.sql` |
 | Front | React 19 · Vite 7 · Material UI 7 · Axios. Proxy de `/api` a `:8080` |
-| Pruebas | JUnit + Mockito + Spring Boot Test: 24 pruebas (State, DTO, texto del CU 29 y 13 de integración del CU completo contra una H2 en memoria) |
+| Pruebas | JUnit + Mockito + Spring Boot Test: 25 pruebas (State, DTO, texto del CU 29 y 14 de integración del CU completo contra una H2 en memoria) |
 
 **Requisitos:** JDK **21** y Node.js 22 LTS. El paso a paso completo para una computadora
 nueva (instalación, prueba del CU, consola H2 y problemas comunes) está en
@@ -150,7 +150,7 @@ cd back
 
 # Front (otra terminal) -> http://localhost:3000
 cd front
-npm install
+npm ci
 npm run dev
 ```
 
@@ -224,7 +224,7 @@ Detalles de esta forma de comunicación:
   dos beans que se necesitan en el constructor. Por eso el Gestor recibe la Pantalla con
   `@Lazy`. `back/lombok.config` hace que Lombok copie ese `@Lazy` al constructor.
 - **Concurrencia.** La Pantalla y el Gestor guardan estado entre pedidos: es una pantalla para
-  un EB. Por eso los 4 endpoints de la Pantalla son `synchronized`. Sin eso, dos pedidos
+  un EB. Por eso los 5 endpoints de la Pantalla son `synchronized`. Sin eso, dos pedidos
   simultáneos se mezclaban. Pasaba, por ejemplo, con React en modo desarrollo, que llama dos
   veces al abrir, y la lista de bolsines aparecía vacía. **No sacar el `synchronized`.**
   (Es una pantalla para un EB: dos navegadores a la vez comparten el mismo estado. Ver la
@@ -322,7 +322,7 @@ Todo esto se verificó el 10/11 con JDK 21, en el front, en `/h2-console` y en e
 | CU 29 | Una notificación por CM de origen, con el bolsín, la CM destino y cada documentación con su estado final. Si falla, no se registra la recepción | Sesión 05 |
 | Robustez | Validación del orden de los pasos y de la selección (pertenencia al bolsín, área, CMC); errores 400/409; transacción con `saveAndFlush` antes de notificar | O1 de la sesión 06 |
 
-Hay **24 pruebas** y todas pasan.
+Hay **25 pruebas** y todas pasan.
 
 ---
 
@@ -397,8 +397,7 @@ La implementación del CU 28 y del CU 29 está terminada. El detalle está en `P
    `back/data` y `front/node_modules`.
 5. **Defensa:** todos tienen que poder seguir `GUIA_DEMOSTRACION.md` y explicar el State en el
    código (sección 5).
-6. **Opcional, no evaluado:** mejorar el aspecto visual del front (`front/src/theme.js` es
-   provisorio) sin cambiar su funcionamiento.
+6. **Terminado:** se mejoró el frontend y se comprobó en escritorio y móvil emulado.
 
 ---
 

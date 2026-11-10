@@ -7,8 +7,10 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * «entity» ComisiónMédica del diagrama de clases (lifeline ":ComisionMedica"). En el diagrama sólo tiene
- * getNombre(); getEmail() (CU 29) y esCentral() (A5) son extensiones.
+ * Comisión médica del modelo de dominio y de los diagramas del CU 28.
+ * Se usa para identificar el origen y el destino de los bolsines y remitos.
+ * Para A5 se agregó esCentral(), que identifica a la CMC por su nombre.
+ * Ese criterio quedó pendiente de validación con la tutora.
  */
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -26,7 +28,7 @@ public class ComisionMedica {
     private String email;
     private String telefono;
 
-    /** Secuencia: getNombre(): String (para mostrarCM y para el origen de cada bolsín). */
+    /** En la secuencia: getNombre(): String (para mostrarCM y para el origen de cada bolsín). */
     public String getNombre() {
         return nombre;
     }

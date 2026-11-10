@@ -1,9 +1,9 @@
 package ppai.bolsines.modelo.documentacion;
 
 /**
- * «state» DeBaja. Patrón State, rol CONCRETE STATE. Es un estado final de la máquina de estados
- * (se llega desde Registrada o NoRecibida con "9.EliminarDocumentacion/darDeBaja()", CU 9, no
- * implementado). En el diagrama de clases sólo figura new(): DeBaja.
+ * Estado concreto DeBaja del patrón State.
+ * La documentación llega a este estado cuando se la da de baja desde otros CU.
+ * No tiene transiciones adicionales implementadas para registrar una recepción.
  */
 public class DeBaja extends EstadoDocumentacion {
 

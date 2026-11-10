@@ -6,15 +6,11 @@ import java.util.List;
 import ppai.bolsines.modelo.usuario.Empleado;
 
 /**
- * «state» EnBolsinEnviado. Patrón State, rol CONCRETE STATE. Es el estado de la documentación cuando
- * llega el bolsín, y desde él salen las cuatro transiciones del CU 28 de la máquina de estados.
- * En la secuencia es la lifeline "EnBolsinEnviado" que recibe recibirYAceptar(this, historial, ...).
- *
- * Cada transición crea el estado siguiente (new() en la secuencia, GRASP Creador) y usa cambiarEstado(),
- * heredado de EstadoDocumentacion. Quién elige cuál se llama es DetalleRemito, según lo que marcó el EB.
- *
- * Diferencia con el diagrama de clases: allí recibirYAceptar figura con retorno RecibidaYAceptada; en el
- * abstracto y en el código es void (errata del diagrama).
+ * Estado concreto EnBolsinEnviado del patrón State.
+ * La máquina de estados muestra cuatro posibles transiciones para el CU 28:
+ * aceptar, rechazar, registrar como no recibida o redirigir a otra área.
+ * El flujo normal usa recibirYAceptar(); A3, A4 y A5 usan las otras operaciones.
+ * Todas registran el cambio mediante cambiarEstado(), heredado del abstracto.
  */
 public class EnBolsinEnviado extends EstadoDocumentacion {
 
@@ -24,9 +20,9 @@ public class EnBolsinEnviado extends EstadoDocumentacion {
     }
 
     /**
-     * Máquina de estados: EnBolsinEnviado -> RecibidayAceptada, "28.RegistrarRecpcionBolsin[La documentacion
+     * En la máquina de estados: EnBolsinEnviado -> RecibidayAceptada, "28.RegistrarRecpcionBolsin[La documentacion
      * corresponde a la cm destino]/recibiryAceptar()". Flujo descripto y la documentación no marcada en A3/A4/A5.
-     * Secuencia: new(): RecibidayAceptada y self cambiarEstado(...).
+     * En la secuencia: new(): RecibidayAceptada y mensaje a sí mismo cambiarEstado(...).
      */
     @Override
     public void recibirYAceptar(Documentacion doc, List<CambioEstadoDocumentacion> historial,
@@ -35,7 +31,7 @@ public class EnBolsinEnviado extends EstadoDocumentacion {
     }
 
     /**
-     * Máquina de estados: EnBolsinEnviado -> RecibidayRechazada, "28.RegistrarRecepecionBolsin[la documentacion
+     * En la máquina de estados: EnBolsinEnviado -> RecibidayRechazada, "28.RegistrarRecepecionBolsin[la documentacion
      * no corresponde a la cm destino]/recibiryRechazar()". Flujo A4 (no está en la secuencia).
      */
     @Override
@@ -45,7 +41,7 @@ public class EnBolsinEnviado extends EstadoDocumentacion {
     }
 
     /**
-     * Máquina de estados: EnBolsinEnviado -> NoRecibida, "28.RegistrarRecepcionBolsin[no se recibio]/
+     * En la máquina de estados: EnBolsinEnviado -> NoRecibida, "28.RegistrarRecepcionBolsin[no se recibio]/
      * registrarNoRecibida()". Flujo A3 (no está en la secuencia).
      */
     @Override
@@ -55,7 +51,7 @@ public class EnBolsinEnviado extends EstadoDocumentacion {
     }
 
     /**
-     * Máquina de estados: EnBolsinEnviado -> ParaRedirigir, "28.RegistrarRecepcionBolsin[la CM es destino es
+     * En la máquina de estados: EnBolsinEnviado -> ParaRedirigir, "28.RegistrarRecepcionBolsin[la CM es destino es
      * CMC y se debe redirigir a otra area]/redirigir()". Flujo A5 (no está en la secuencia). La guarda "la CM
      * destino es la CMC" la controla el gestor preguntándole al bolsín antes de llegar acá.
      */

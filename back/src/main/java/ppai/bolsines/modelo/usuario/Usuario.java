@@ -6,7 +6,10 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-/** «entity» Usuario del diagrama de clases (lifeline ":Usuario" de la secuencia). */
+/**
+ * Usuario del modelo de dominio y del diagrama de clases.
+ * Se obtiene desde la sesión activa y permite localizar al empleado que opera el CU.
+ */
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)

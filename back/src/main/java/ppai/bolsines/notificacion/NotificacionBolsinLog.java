@@ -7,8 +7,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Implementación de demostración del CU 29 (no está en los diagramas): redacta el correo y lo registra
- * en el log en lugar de enviarlo. Cambiarla por un envío real no afecta al gestor ni al modelo.
+ * Implementación de la interfaz del CU 29 que deja el aviso en el log del backend.
+ * Permite probar la notificación sin enviar correos reales. Cada aviso contiene
+ * solamente la documentación de la comisión médica de origen correspondiente.
  */
 @Component
 public class NotificacionBolsinLog implements InterfazNotificacionBolsin {

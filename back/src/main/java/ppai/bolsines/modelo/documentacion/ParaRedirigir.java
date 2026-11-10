@@ -6,11 +6,10 @@ import java.util.List;
 import ppai.bolsines.modelo.usuario.Empleado;
 
 /**
- * «state» ParaRedirigir. Patrón State, rol CONCRETE STATE. A este estado llega la documentación en A5
- * (EnBolsinEnviado -> ParaRedirigir). Después, el área de la CMC verifica la documentación y la acepta o
- * la rechaza. Esa verificación es posterior a la recepción: ningún flujo implementado del CU 28 la
- * dispara (está fuera del alcance), pero las transiciones existen como en el diagrama de clases
- * (recibirYAceptar y recibirYRechazar) y tienen prueba unitaria.
+ * Estado concreto ParaRedirigir del patrón State.
+ * En A5 se llega a él cuando la documentación debe pasar a otra área de la Central.
+ * La máquina de estados permite que esa área luego la acepte o rechace.
+ * La entrega interna posterior no forma parte del flujo implementado del CU 28.
  */
 public class ParaRedirigir extends EstadoDocumentacion {
 
@@ -20,7 +19,7 @@ public class ParaRedirigir extends EstadoDocumentacion {
     }
 
     /**
-     * Máquina de estados: ParaRedirigir -> RecibidayAceptada, "28.RegistrarRecepcionBolsin[el area verifica
+     * En la máquina de estados: ParaRedirigir -> RecibidayAceptada, "28.RegistrarRecepcionBolsin[el area verifica
      * que la documentacion es correcta]/recibiryAceptar()".
      */
     @Override
@@ -30,7 +29,7 @@ public class ParaRedirigir extends EstadoDocumentacion {
     }
 
     /**
-     * Máquina de estados: ParaRedirigir -> RecibidayRechazada, "28.RegistrarRecepcionBolsin[el area verifica
+     * En la máquina de estados: ParaRedirigir -> RecibidayRechazada, "28.RegistrarRecepcionBolsin[el area verifica
      * la documentacion y no es correcta]/recibiryRechazar()".
      */
     @Override

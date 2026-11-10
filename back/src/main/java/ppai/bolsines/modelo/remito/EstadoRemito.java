@@ -6,9 +6,9 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 /**
- * «entity» EstadoRemito del diagrama de clases (lifeline ":EstadoRemito"). Entidad catálogo, sin
- * historial, como en el modelo de dominio; el estado se reconoce por su nombre (el patrón State se
- * aplicó sólo a Documentación).
+ * Estado del remito del diagrama de clases.
+ * Permite consultar si un remito está RecibidoYAceptado o RecibidoYAceptadoParcial.
+ * No forma parte del patrón State: ese patrón se aplica a Documentación.
  */
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -19,7 +19,7 @@ public class EstadoRemito {
     private String nombre;
     private String descripcion;
 
-    /** Secuencia: loop de estados de remito, Gestor -> :EstadoRemito *esRecibidoyAceptado(): boolean. */
+    /** En la secuencia: loop de estados de remito, Gestor -> :EstadoRemito *esRecibidoyAceptado(): boolean. */
     public boolean esRecibidoyAceptado() {
         return "RecibidoYAceptado".equals(nombre);
     }

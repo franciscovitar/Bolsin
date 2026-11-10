@@ -21,13 +21,10 @@ import ppai.bolsines.modelo.comisionmedica.ComisionMedica;
 import ppai.bolsines.modelo.usuario.Empleado;
 
 /**
- * «entity» Remito del diagrama de clases y lifeline ":Remito" de la secuencia.
- *
- * GRASP Experto: conoce sus detalles (y por ellos su documentación), su estado y su CM de origen y
- * destino; arma los datos de su documentación y decide en qué estado queda al recibirse.
- * Asociaciones del diagrama: detallesRemito (1..*), estado (EstadoRemito), origen y destino
- * (ComisiónMédica). El estado del remito no tiene historial (como en el modelo de dominio).
- * Atributo: en el diagrama nroRemito; en el código numero.
+ * Remito del diagrama de clases y del diagrama de secuencia.
+ * Conoce sus detalles, su comisión médica de origen y su estado.
+ * Por Experto (GRASP), actualiza la documentación que contiene y decide si,
+ * al recibir el bolsín, queda aceptado o aceptado parcialmente.
  */
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -54,13 +51,13 @@ public class Remito {
     @JoinColumn(name = "remito_numero")
     private List<DetalleRemito> detalleRemito = new ArrayList<>();
 
-    /** Secuencia: Bolsin -> :Remito *getNumero(): int. */
+    /** En la secuencia: Bolsin -> :Remito *getNumero(): int. */
     public int getNumero() {
         return numero;
     }
 
     /**
-     * Secuencia: Bolsin -> :Remito buscarDatosDocumentacion(): String[][] y el loop "Documentacion Remito"
+     * En la secuencia: Bolsin -> :Remito buscarDatosDocumentacion(): String[][] y el loop "Documentacion Remito"
      * con Remito -> :DetalleRemito buscarDatosDocumentacion(): String[]. Una fila [nroRemito,
      * nroDocumentacion, asunto, tipo, areaCMCDestino] por documentación (nroDocumentacion y
      * areaCMCDestino son extensiones de A3/A4/A5).
@@ -93,8 +90,8 @@ public class Remito {
     }
 
     /**
-     * Secuencia: Bolsin -> :Remito actualizarEstado(estadoRemito: EstadoRemito, fhActual: DateTime,
-     * responsable: Empleado); luego self setEstado(e) y self actualizarDocumentacion(fhActual, responsable).
+     * En la secuencia: Bolsin -> :Remito actualizarEstado(estadoRemito: EstadoRemito, fhActual: DateTime,
+     * responsable: Empleado); luego mensaje a sí mismo setEstado(e) y mensaje a sí mismo actualizarDocumentacion(fhActual, responsable).
      * Diferencia por A3, A4 y A5: recibe al final estadoRemitoParcial, nrosNoRecibida, nrosRechazada y
      * nrosParaRedirigir. Si alguna documentación del remito no se aceptó (no recibida o rechazada), queda
      * RecibidoYAceptadoParcial; si no, RecibidoYAceptado. A3: regla de la ERS. A4 y A5 (la redirigida no
@@ -107,7 +104,7 @@ public class Remito {
         actualizarDocumentacion(fhActual, responsable, nrosNoRecibida, nrosRechazada, nrosParaRedirigir);
     }
 
-    /** Secuencia: Remito self setEstado(e: EstadoRemito). */
+    /** En la secuencia: Remito mensaje a sí mismo setEstado(e: EstadoRemito). */
     public void setEstado(EstadoRemito e) {
         this.estado = e;
     }
@@ -118,7 +115,7 @@ public class Remito {
     }
 
     /**
-     * Secuencia: self actualizarDocumentacion(fhActual, responsable) y el loop "ActualizarEstadosDocumentacion"
+     * En la secuencia: mensaje a sí mismo actualizarDocumentacion(fhActual, responsable) y el loop "ActualizarEstadosDocumentacion"
      * con Remito -> :DetalleRemito actualizarDocumentacion(fhActual, responsable). Privado, como en el
      * diagrama de clases (-). Recibe además los tres arreglos de documentación marcada (A3/A4/A5).
      */

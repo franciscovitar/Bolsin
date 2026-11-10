@@ -3,8 +3,9 @@
 PPAI DSI 2026 · 3K5 · Grupo 06 · Actualizado al 10/11/2026
 
 Los diagramas originales de `docs/diagramas/` (**DIAGRAMA CLASES**, **SECUENCIA PATRON** y
-**MaquinaEstadosPPAI**) **no se modificaron**. Este documento junta en un solo lugar todas las
-diferencias con el código, para la defensa y para preparar los diagramas complementarios del PDF.
+**MaquinaEstadosPPAI**) **no se modificaron**. Este archivo reúne las diferencias entre el código y los diagramas. Algunas aparecen al
+implementar los flujos alternativos; otras necesitan validación con la tutora. No se presentan
+como coincidencias exactas.
 El detalle de cada flujo está en `docs/sesiones/Sesion_01` a `Sesion_05`.
 
 Categorías:
@@ -68,7 +69,7 @@ llegan **vacíos** y el comportamiento es exactamente el del diagrama.
 - `EstadoDocumentacionConverter`: persistencia del estado por nombre.
 - Los records de `dto` y los repositorios: diseño de persistencia y de la interfaz.
 
-## B. Justificadas (flujo descripto)
+## B. Diferencias de implementación en el flujo descripto
 
 | Diagrama | Código | Motivo |
 |---|---|---|
@@ -82,7 +83,7 @@ llegan **vacíos** y el comportamiento es exactamente el del diagrama.
 | `Bolsin.buscarBolsinesEnviados(cmUsuario)` (clases) | Sin parámetro; la CM se pregunta con `esCmDestino` | Se sigue a la secuencia |
 | Atributos del Gestor `nroPrecintoCM`, `origenCM`, `nroRemito`, `asuntoDocumentación`, `tipoDocumentación` | `nrosPrecinto[]`, `origenes[]`, `nrosRemito[]`, `documentacion[][]` | El gestor recuerda listas, no un solo valor |
 
-## C. Erratas del diagrama (el código usa el nombre correcto o el de la secuencia)
+## C. Diferencias de nombres y firmas entre diagramas
 
 - `tomarConfirmaionRegistro` (le falta una "c").
 - `FinCU()` en la secuencia y `finCU()` en clases.

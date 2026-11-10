@@ -27,21 +27,13 @@ import ppai.bolsines.repositorio.EstadoRemitoRepositorio;
 import ppai.bolsines.repositorio.SesionRepositorio;
 
 /**
- * «control» GestorRegistroRecepcionBolsines del diagrama de clases y lifeline
- * ":GestorRegistroRecepcionBolsines" del diagrama de secuencia.
+ * Gestor del CU 28 («control» en el diagrama de clases).
+ * Coordina los pasos de la recepción y recuerda lo que selecciona el encargado.
+ * Las reglas sobre bolsines, remitos y documentación las resuelven las entidades (Experto).
+ * En la secuencia es el objeto :GestorRegistroRecepcionBolsines.
  *
- * GRASP: Controlador del CU 28 y Fabricación Pura. Coordina el caso de uso, recuerda lo que el EB va
- * eligiendo y le manda a la pantalla los mensajes mostrarX() del diagrama. Las reglas del dominio las
- * resuelven las entidades (Experto): el gestor pregunta, no decide por ellas. La validez de cada
- * cambio de estado de la documentación la resuelve el patrón State, no el gestor.
- *
- * Diferencias con el diagrama de clases:
- * - Allí todos los métodos son públicos (+). Acá sólo son públicos los que recibe de la pantalla;
- *   los que en la secuencia son mensajes a sí mismo (self) son private.
- * - actualizarRemitoyDocumentación() figura en el diagrama de clases, pero no en la secuencia; no se
- *   implementó (la actualización la hace selec:Bolsin.actualizarEstado).
- * - Los repositorios, el Clock y la interfaz del CU 29 son diseño de persistencia e infraestructura:
- *   no aparecen en los diagramas.
+ * Los métodos adicionales para A3, A4, A5 y CU 29 no figuran en la secuencia original.
+ * Las diferencias de firmas y visibilidad están en docs/diferencias_codigo_diagramas.md.
  */
 @Service
 @RequiredArgsConstructor
@@ -98,7 +90,7 @@ public class GestorRegistroRecepcionBolsines {
     private EstadoRemito estadoRecibidoYAceptadoParcial; // extensión A3/A4
 
     /**
-     * Secuencia: Pantalla -> Gestor opcRegistrarRecepcionBolsin(). Pasos 1 a 4 del CU:
+     * En la secuencia: Pantalla -> Gestor opcRegistrarRecepcionBolsin(). Pasos 1 a 4 del CU:
      * buscarUsuarioLogueado(), buscarCMUsuario(), mostrarCM(nombre), buscarBolsinesEnviados() y
      * mostrarBolsinesEnviadosParaSeleccion(...).
      */
@@ -113,7 +105,7 @@ public class GestorRegistroRecepcionBolsines {
     }
 
     /**
-     * Secuencia: Pantalla -> Gestor tomarSeleccionBolsin(nroPrecinto: int). Pasos 5 a 7: buscarRemitos(),
+     * En la secuencia: Pantalla -> Gestor tomarSeleccionBolsin(nroPrecinto: int). Pasos 5 a 7: buscarRemitos(),
      * buscarDocumentacion(), mostrarNumRemitosyDocumentacionAsociada(...), getOpcionesRecepcion() y
      * mostrarOpcionesRecepcionParaSeleccion(...). El bolsín elegido es el "selec:Bolsin" de la secuencia.
      */
@@ -139,7 +131,7 @@ public class GestorRegistroRecepcionBolsines {
     }
 
     /**
-     * Secuencia: Pantalla -> Gestor tomarSeleccionOpcionRecepcion(opcion: String) y luego
+     * En la secuencia: Pantalla -> Gestor tomarSeleccionOpcionRecepcion(opcion: String) y luego
      * Gestor -> Pantalla solicitarConfirmacionRegistro(). Pasos 8 y 9 (la secuencia modela la opción 1).
      * Extensiones: con las opciones 2, 3 y 4 (A3, A4 y A5), antes de confirmar se pide marcar
      * documentación con solicitarSeleccionDocumentacion...(). La opción 4 sólo vale si el destino es la
@@ -207,7 +199,7 @@ public class GestorRegistroRecepcionBolsines {
     }
 
     /**
-     * Secuencia: Pantalla -> Gestor tomarConfirmacionRegistro(confirmacion: boolean) (escrito
+     * En la secuencia: Pantalla -> Gestor tomarConfirmacionRegistro(confirmacion: boolean) (escrito
      * "tomarConfirmaionRegistro" en el diagrama). Pasos 10 a 12: actualizarBolsin(), llamarCasoUso29(),
      * mostrarEjecucionExitosa() y FinCU() (finCU() en el código).
      * Diferencia: en la secuencia mostrarEjecucionExitosa() aparece antes del «include»; acá el CU 29 va
@@ -241,7 +233,7 @@ public class GestorRegistroRecepcionBolsines {
     }
 
     /**
-     * Secuencia: self buscarUsuarioLogueado(). Gestor -> Activa:Sesion getUsuario(): Usuario (la Sesion
+     * En la secuencia: mensaje a sí mismo buscarUsuarioLogueado(). Gestor -> Activa:Sesion getUsuario(): Usuario (la Sesion
      * a su vez le envía getUsuario() a :Usuario) y Gestor -> :Empleado *esTuUsuario(u): el "*" es este for.
      * Obtener la sesión activa (la que no tiene fechaHoraFin) con el repositorio es diseño de persistencia.
      */
@@ -261,7 +253,7 @@ public class GestorRegistroRecepcionBolsines {
     }
 
     /**
-     * Secuencia: self buscarCMUsuario() y Gestor -> Logueado:Empleado obtenerCM(): ComisionMedica.
+     * En la secuencia: mensaje a sí mismo buscarCMUsuario() y Gestor -> Logueado:Empleado obtenerCM(): ComisionMedica.
      * Diferencia: en el diagrama el getNombre() a :ComisionMedica lo envía Empleado; acá lo envía el
      * gestor (en opcRegistrarRecepcionBolsin), porque necesita el objeto CM y también su nombre.
      */
@@ -270,7 +262,7 @@ public class GestorRegistroRecepcionBolsines {
     }
 
     /**
-     * Secuencia: self buscarBolsinesEnviados() y el loop "EstadosBolsin [mientras haya bolsines]":
+     * En la secuencia: mensaje a sí mismo buscarBolsinesEnviados() y el loop "EstadosBolsin [mientras haya bolsines]":
      * Gestor -> :Bolsin buscarBolsinesEnviados(): boolean, esCmDestino(cm), getNumPrecinto() y
      * getOrigen() (el getNombre() lo envía el gestor; ver buscarCMUsuario). En el diagrama de clases
      * Bolsin.buscarBolsinesEnviados recibe cmUsuario; acá se sigue a la secuencia (sin parámetro).
@@ -286,28 +278,28 @@ public class GestorRegistroRecepcionBolsines {
         origenes = bolsines.stream().map(b -> b.getOrigen().getNombre()).toArray(String[]::new);
     }
 
-    /** Secuencia: self buscarRemitos() y Gestor -> selec:Bolsin buscarRemitos(). */
+    /** En la secuencia: mensaje a sí mismo buscarRemitos() y Gestor -> selec:Bolsin buscarRemitos(). */
     private void buscarRemitos() {
         nrosRemito = bolsinSeleccionado.buscarRemitos();
     }
 
-    /** Secuencia: self buscarDocumentacion() y Gestor -> selec:Bolsin buscarDocumentacion(): String[][]. */
+    /** En la secuencia: mensaje a sí mismo buscarDocumentacion() y Gestor -> selec:Bolsin buscarDocumentacion(): String[][]. */
     private void buscarDocumentacion() {
         documentacion = bolsinSeleccionado.buscarDocumentacion();
     }
 
-    /** Secuencia: self getOpcionesRecepcion(). En el diagrama de clases devuelve void; acá String[]. */
+    /** En la secuencia: mensaje a sí mismo getOpcionesRecepcion(). En el diagrama de clases devuelve void; acá String[]. */
     private String[] getOpcionesRecepcion() {
         return OPCIONES_RECEPCION.clone();
     }
 
-    /** Secuencia: self getFechaHoraActual(): datetime. La hora sale del bean Clock. */
+    /** En la secuencia: mensaje a sí mismo getFechaHoraActual(): datetime. La hora sale del bean Clock. */
     private LocalDateTime getFechaHoraActual() {
         return LocalDateTime.now(reloj);
     }
 
     /**
-     * Secuencia: self actualizarBolsin(). Loop "Estado Bolsin" con *esRecibidoEnCMDestino() a
+     * En la secuencia: mensaje a sí mismo actualizarBolsin(). Loop "Estado Bolsin" con *esRecibidoEnCMDestino() a
      * :EstadoBolsin y loop de estados de remito con *esRecibidoyAceptado() a :EstadoRemito (punteros
      * a los estados nuevos), getFechaHoraActual() y Gestor -> selec:Bolsin actualizarEstado(fhActual,
      * estadoBolsin, estadoRemito, responsable).
@@ -340,7 +332,7 @@ public class GestorRegistroRecepcionBolsines {
     }
 
     /**
-     * Secuencia: self llamarCasoUso29() y el «include» a "29. Notificar recepción de Bolsin".
+     * En la secuencia: mensaje a sí mismo llamarCasoUso29() y el «include» a "29. Notificar recepción de Bolsin".
      * Diferencia (CU 29): la secuencia muestra un solo «include»; acá se notifica una vez por cada CM de
      * origen de los remitos, cada una sólo con la situación de su documentación (CU 28 paso 12: "a cada
      * CM de origen que envió documentación"). El bolsín responde orígenes y situación (Experto); el gestor
@@ -354,7 +346,7 @@ public class GestorRegistroRecepcionBolsines {
         }
     }
 
-    /** Secuencia: self FinCU() (finCU() en el diagrama de clases). Olvida todo lo que eligió el EB. */
+    /** En la secuencia: mensaje a sí mismo FinCU() (finCU() en el diagrama de clases). Olvida todo lo que eligió el EB. */
     private void finCU() {
         bolsines = null;
         nrosPrecinto = null;
