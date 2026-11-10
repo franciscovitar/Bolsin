@@ -1,0 +1,204 @@
+==============================================================================
+ CÓMO EJECUTAR - PPAI Bolsines (DSI 2026) - CU 28 Registrar recepción de bolsín
+ 3K5 · Grupo 06 · Última actualización: 10/11/2026
+==============================================================================
+
+Son dos programas que corren al mismo tiempo, cada uno en su terminal:
+  - BACK  (Java / Spring Boot) en http://localhost:8080. Trae su base de datos H2 adentro:
+          no hay que instalar ninguna base ni Docker.
+  - FRONT (React / Vite)       en http://localhost:3000. Es lo que se abre en el navegador.
+Los comandos de este archivo son para Windows (PowerShell). Para Mac/Linux, ver la sección 8.
+
+------------------------------------------------------------------------------
+ 1. QUÉ HAY QUE TENER INSTALADO (una sola vez)
+------------------------------------------------------------------------------
+  a) Git                      https://git-scm.com/downloads
+  b) JDK 21. Tiene que ser el 21: con versiones más nuevas Lombok no compila.
+     Recomendado: Eclipse Temurin 21 (https://adoptium.net). En el instalador, marcar
+     "Set JAVA_HOME variable".
+  c) Node.js 22 LTS (o cualquier versión 20.19 o superior)   https://nodejs.org
+  d) Opcional: IntelliJ IDEA (sección 7).
+  Maven NO hace falta: el proyecto trae el wrapper (mvnw), que lo descarga solo.
+
+  Para comprobarlo, abrir una terminal nueva y escribir:
+     java -version          -> tiene que decir 21.x
+     node -v                -> v22.x (o v20.19 o superior)
+     git --version
+
+------------------------------------------------------------------------------
+ 2. BAJAR EL PROYECTO (una sola vez)
+------------------------------------------------------------------------------
+     git clone <URL-del-repositorio-del-grupo>
+     cd ppai-bolsines
+
+  Si te pasaron el .zip, descomprimilo y entrá a la carpeta ppai-bolsines.
+
+------------------------------------------------------------------------------
+ 3. LEVANTAR EL BACK (terminal 1)
+------------------------------------------------------------------------------
+     cd back
+     .\mvnw.cmd clean install        # la primera vez tarda: baja las dependencias y corre las 24 pruebas
+     .\mvnw.cmd spring-boot:run
+
+  Está listo cuando aparece:
+     Started BolsinesApplication in X seconds
+  Para comprobarlo, abrir http://localhost:8080/actuator/health. Tiene que decir "UP".
+
+  Si tenés más de un JDK instalado (o "java -version" no dice 21), antes de los comandos apuntá
+  esa terminal al 21 (cambiá la ruta por la de tu JDK 21). Esto vale sólo para esa terminal:
+     $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.x-hotspot"
+     $env:Path = "$env:JAVA_HOME\bin;$env:Path"
+  Para que quede fijo para tu usuario:
+     [Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\ruta\al\jdk-21", "User")
+  Después cerrá la terminal y abrí una nueva.
+
+  La base de datos se crea sola en back\data. Cada vez que el back arranca, se borra y se
+  vuelve a cargar con los datos de prueba (back\src\main\resources\data.sql). Por eso la
+  demo siempre empieza igual.
+
+------------------------------------------------------------------------------
+ 4. LEVANTAR EL FRONT (terminal 2)
+------------------------------------------------------------------------------
+     cd front
+     npm ci                          # sólo la primera vez (o si cambia package-lock.json);
+                                     # instala exactamente las versiones del package-lock.json
+     npm run dev
+
+  Abrir http://localhost:3000 en el navegador.
+  El front le reenvía al back todo lo que va a /api. Por eso el back tiene que estar levantado
+  antes de usar la pantalla.
+
+------------------------------------------------------------------------------
+ 5. PROBAR EL CASO DE USO
+------------------------------------------------------------------------------
+  El guion completo de la defensa, con lo que tiene que pasar en cada paso, está en
+  GUIA_DEMOSTRACION.md. Acá va el resumen.
+
+  Usuaria logueada: Laura Gómez, Encargada de Bolsines de la Comisión Médica Córdoba.
+  Arriba a la derecha tiene que aparecer "Comisión Médica Córdoba".
+
+  FLUJO DESCRIPTO
+    1. Aparecen 3 bolsines enviados a Córdoba: 5001 (Central), 5002 (Rosario) y
+       5005 (Mendoza). El 5003 está Cerrado y el 5004 va a Rosario, así que no aparecen.
+    2. "Seleccionar" en el 5001. Se ven los remitos 1001 y 1002 con su documentación.
+       Tocar "Continuar".
+    3. Elegir la opción "El contenido del bolsín es igual al registrado" y tocar "Continuar".
+    4. Tocar "Confirmar recepción". Aparece el mensaje de éxito.
+    5. En la terminal del back aparece el correo del CU 29, con una línea por documentación:
+          CU 29 - Correo a cm.central@bolsines.test (Comisión Médica Central): el bolsín con
+          precinto 5001 fue recibido en Comisión Médica Córdoba. Situación de la documentación enviada:
+            - Remito 1001, documentación 1 "Expediente 1/2026 - Pérez, Juan": RecibidaYAceptada
+            ...
+    6. "Registrar otra recepción": ahora la lista tiene sólo 5002 y 5005.
+
+  FLUJOS ALTERNATIVOS
+    A1 - Escribir un precinto que no existe en "Número de precinto" (por ejemplo 9999).
+         Sale el aviso "No se encontró un bolsín con el número de precinto...".
+    A2 - Escribir una CM que no está en "Comisión médica origen" (por ejemplo Salta).
+         Sale el aviso "No se encontró un bolsín de la comisión médica origen...".
+    A3 - Opción 2 "No se recibe toda la documentación": marcar la documentación que no llegó.
+         La marcada queda NoRecibida, el resto RecibidaYAceptada, y el remito al que le faltó
+         algo queda RecibidoYAceptadoParcial.
+    A4 - Opción 3 "Existe documentación que no corresponde al destino": marcar la que no
+         corresponde. Queda RecibidaYRechazada, el resto RecibidaYAceptada, y su remito queda
+         RecibidoYAceptadoParcial (decisión provisional del grupo).
+    A5 - Opción 4 "La documentación se debe redirigir a otra área": sólo si la CM destino es la
+         Central. Con Laura (Córdoba) se rechaza con un mensaje. Para mostrarla, levantar el back
+         con el fixture de la CMC (la usuaria pasa a ser Ana Ruiz y aparece el bolsín 5006):
+           cd back
+           .\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--spring.sql.init.data-locations=classpath:data.sql,file:src/test/resources/datos-cmc.sql"
+         La documentación marcada (tiene que tener un área de la CMC registrada) queda
+         ParaRedirigir y el resto RecibidaYAceptada. Para volver a la demo normal, levantar el
+         back sin el argumento. data.sql no cambia.
+    A6 - Hacer el flujo hasta "Confirmar" y tocar "No confirmar". Sale "Registro cancelado"
+         y el bolsín sigue en la lista. No se notifica nada.
+    En cualquier paso, "Cancelar registro" vuelve a empezar (Obs. 1 del CU).
+
+  VER LA BASE DE DATOS (para mostrar la persistencia)
+    http://localhost:8080/h2-console
+      JDBC URL:   jdbc:h2:file:./data/bolsines
+      Usuario:    sa
+      Contraseña: (vacía)
+    Consultas útiles después de confirmar el 5001:
+      SELECT numero, estado_actual FROM documentacion;
+      SELECT * FROM cambio_estado_documentacion WHERE documentacion_numero = 1;
+      SELECT numero, estado_id FROM remito;
+      SELECT * FROM cambio_estado_bolsin WHERE bolsin_numero = 101;
+    Lo esperado (flujo descripto con el 5001):
+      - Documentación 1, 2 y 3 en RecibidaYAceptada. Su cambio de estado anterior queda
+        cerrado y el nuevo tiene como responsable a Laura (id 1).
+      - Remitos 1001 y 1002 con estado_id 4 (RecibidoYAceptado; el 5 es RecibidoYAceptadoParcial).
+      - Bolsín 101 con un cambio de estado nuevo: RecibidoEnCMDestino.
+    Más consultas, y lo esperado para A3, A4 y A5, en GUIA_DEMOSTRACION.md.
+
+  PERSISTENCIA ENTRE REINICIOS (opcional)
+    Por defecto, cada arranque recrea la base. Para mostrar que lo guardado persiste, cortar el
+    back y levantarlo sin recrear la base:
+      .\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--spring.jpa.hibernate.ddl-auto=update --spring.sql.init.mode=never"
+
+------------------------------------------------------------------------------
+ 6. DETENER
+------------------------------------------------------------------------------
+  En cada terminal: Ctrl + C. Si pregunta "¿Desea terminar el trabajo por lotes (S/N)?",
+  responder S.
+  En IntelliJ: el botón rojo de Stop (o Ctrl + F2).
+
+------------------------------------------------------------------------------
+ 7. DESDE INTELLIJ (opcional)
+------------------------------------------------------------------------------
+  - Abrir la carpeta back como proyecto Maven.
+  - File > Project Structure > SDK: elegir el JDK 21.
+  - Settings > Build, Execution, Deployment > Build Tools > Maven:
+      "Maven home path" = Use Maven wrapper.
+  - En la misma sección, Importing > "JDK for importer" = 21, y Runner > "JRE" = 21.
+  - Ejecutar BolsinesApplication (botón verde). Las pruebas están en src/test/java
+    (EstadoDocumentacionTest, RegistroRecepcionBolsinIntegracionTest y otras; 24 en total).
+  - El front se corre igual desde la terminal integrada de IntelliJ (paso 4).
+
+------------------------------------------------------------------------------
+ 8. MAC / LINUX
+------------------------------------------------------------------------------
+  Lo mismo, pero con ./mvnw en lugar de .\mvnw.cmd:
+     cd back
+     chmod +x mvnw        # sólo si dice "permission denied"
+     ./mvnw clean install
+     ./mvnw spring-boot:run
+
+------------------------------------------------------------------------------
+ 9. PROBLEMAS CONOCIDOS Y SOLUCIÓN
+------------------------------------------------------------------------------
+  - "ExceptionInInitializerError ... EndPosTable" al compilar:
+      Maven está usando un JDK distinto del 21. Configurar JAVA_HOME (paso 3).
+  - ".\mvnw.cmd no se reconoce":
+      Estás en la carpeta equivocada; tenés que estar dentro de back.
+  - "Remote host terminated the handshake", "SSL peer shut down" o dependencias en rojo en
+    IntelliJ:
+      El antivirus (por ejemplo, el escaneo HTTPS de AVG) corta la descarga desde Maven
+      Central. Desactivarlo un momento y volver a correr .\mvnw.cmd clean install. Después
+      recargar Maven en IntelliJ.
+  - "npm no se puede cargar porque la ejecución de scripts está deshabilitada":
+      En PowerShell, una sola vez:
+        Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+      O usar npm.cmd en lugar de npm.
+  - "Port 8080 was already in use" (o el 3000):
+      Quedó un back (o un front) corriendo. Cerrar esa terminal. Si sigue ocupado:
+        netstat -ano | findstr :8080        -> anotar el PID de la última columna
+        taskkill /PID <PID> /F
+  - El front dice "No se pudo comunicar con el servidor":
+      El back no está levantado, o todavía está arrancando.
+  - Los datos "volvieron" después de reiniciar: es normal, porque la base se recrea en cada
+      arranque (ver "Persistencia entre reinicios" en el paso 5).
+  - Una tilde llega mal al back al probar la API con curl en Windows (400 "Invalid UTF-8"):
+      es la consola, no el back. Desde el front no pasa.
+  - No hace falta Docker ni PostgreSQL: la base es H2 y viene dentro del back.
+
+------------------------------------------------------------------------------
+ MÁS INFORMACIÓN
+------------------------------------------------------------------------------
+  GUIA_DEMOSTRACION.md                    guion de la defensa (incluye A5 con su fixture)
+  CONTEXTO_IA.md                          estado del trabajo, reglas y cómo seguir (también con IA)
+  AGENTS.md                               reglas del proyecto
+  PENDIENTE.txt                           plan de trabajo
+  docs/sesiones/                          qué se hizo en cada sesión
+  docs/diferencias_codigo_diagramas.md    diferencias entre el código y los diagramas
+  docs/decisiones_para_la_tutora.md       decisiones provisionales a validar

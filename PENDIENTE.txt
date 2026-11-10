@@ -1,0 +1,118 @@
+==============================================================================
+ PENDIENTE - PPAI Bolsines (DSI 2026) - CU 28 Registrar recepción de bolsín
+ Última actualización: 10/11/2026 (CU 28 completo con A1-A6 y CU 29; auditoría y correcciones O1-O3)
+==============================================================================
+
+Plan hasta la Entrega 2 (Diseño), en el orden en que conviene hacerlo.
+[x] hecho, [~] escrito y falta probar lo indicado, [ ] pendiente, [N/A] no aplica.
+Lo que se evalúa: consistencia con el modelado, flujo descripto + al menos 2 flujos
+alternativos funcionando, persistencia en base de datos y defensa del patrón.
+COMUNICADO DOCENTE: "Para la 2da entrega del PPAI no se pedirá el apartado correspondiente a
+Diseño de experiencia de usuario." Prevalece sobre las consignas generales (ver Etapa 4).
+
+------------------------------------------------------------------------------
+ ETAPA 0 - Estructura base
+------------------------------------------------------------------------------
+[x] 1. Back Spring Boot 4.1.1 / Java 21 con paquetes pantalla, gestor, modelo, dto,
+       repositorio, config. Compila con el JDK 21 (con el 27 falla Lombok). Si hay varios JDK,
+       fijar JAVA_HOME al 21 en la terminal (ver COMO_EJECUTAR.txt).
+[x] 2. mvnw, mvnw.cmd y .mvn/wrapper copiados desde el repo del TPI de Backend.
+[x] 3. Base de datos: H2 en modo archivo (back/data), sin Docker. Decisión del 08/11: para un
+       solo CU, Docker/PostgreSQL agregaba problemas (motor de Docker, zona horaria) sin
+       beneficio; H2 es lo que usa el repo de la cátedra y /h2-console sirve para la defensa.
+[x] 4. Front React 19 + Vite 7 + MUI 7, compila y el proxy a :8080 funciona.
+[x] 5. Probar la cadena completa (back con H2 + front). Funciona (09/11 y 10/11).
+[~] 6. Repositorio del grupo en GitHub: se subió el 09/11. El trabajo del 10/11 (A3-A5, CU 29,
+       auditoría) está en una copia local: falta integrarlo al repositorio del grupo.
+[~] 6b. Arranque en otra computadora: probado el 10/11 en una PC con Java 17 por defecto, fijando
+       JAVA_HOME al JDK 21 sólo en la terminal (npm ci respeta package-lock.json). Falta en una
+       PC sin nada instalado.
+
+------------------------------------------------------------------------------
+ ETAPA 1 - Corregir el análisis (correcciones del tutor)
+------------------------------------------------------------------------------
+Máquina de estados de Documentación:
+[x] 7. EnRemito -> EnBolsinSaliente: agregar CU 20 Modificar Bolsín (no sólo CU 19).
+[x] 8. EnRemito -> Registrada: se da con CU 16 Modificar Remito o CU 17 Cancelar Remito.
+[x] 9. EnBolsinEnviado -> RecibidaYAceptada: agregar la condición de guarda.
+[x] 10. Agregar Registrada -> DeBaja (CU 9 Eliminar Documentación).
+[x] 11. Agregar RecibidaYRechazada -> Registrada (CU 31 Registrar Revisión de Documentación).
+[x] 12. Verificar NoRecibida -> Registrada mediante CU 31 (hoy dice CU 8).
+Diagrama de clases:
+[x] 13. Agregar la relación CambioEstadoDocumentacion -> Empleado (responsable).
+Secuencia:
+[x] 14. En el loop de estados del Bolsín, filtrar por CM destino antes de pedir el precinto.
+[x] 15. (Decidido no cambiarlo: el * representa el loop.)
+[x] 16. Finalizar el CambioEstadoBolsin actual DESPUÉS de actualizar remitos y documentación;
+        recién ahí setFechaHoraFin() y crear el nuevo CambioEstadoBolsin.
+Todos los diagramas:
+[x] 17. Parámetros y tipos de retorno en todos los métodos.
+
+------------------------------------------------------------------------------
+ ETAPA 2 - Rediseño con State (Entrega 2, parte de diseño)
+------------------------------------------------------------------------------
+[~] 18. Identificación del patrón: problema que resuelve y justificación. Falta confirmar que
+        el texto esté en el borrador del PDF (en el repositorio sólo están los diagramas).
+[x] 19. Vista estática de diseño: Documentacion (contexto), estado abstracto y estados concretos,
+        con tipos, parámetros, retornos y visibilidad.
+[x] 20. Vista dinámica de diseño: la parte del escenario que cambia (actualización de la
+        documentación al confirmar la recepción).
+[x] 21. Explicación de cada clase del patrón (contexto, estado abstracto, estado concreto).
+[ ] 21b. Diagramas complementarios para el PDF (sin tocar los originales): extensión de la
+        secuencia para A3/A4/A5 y CU 29, y métodos nuevos en clases. Base:
+        docs/diferencias_codigo_diagramas.md. Forma a decidir con la tutora (decisión 11).
+
+------------------------------------------------------------------------------
+ ETAPA 3 - Implementación del CU 28
+------------------------------------------------------------------------------
+[x] 22. Entidades JPA. State: EstadoDocumentacion abstracta + 9 estados; el estado se guarda
+        como nombre en una columna (EstadoDocumentacionConverter).
+[x] 23. data.sql: CM Central, Córdoba, Rosario y Mendoza; sesión activa de Laura Gómez (EB de
+        Córdoba); bolsines enviados a Córdoba con precinto 5001, 5002 y 5005.
+[x] 24. Gestor (@Service) y Pantalla (@RestController, POST /api/registro-recepcion-bolsin/<mensaje>).
+[x] 25. Pruebas: 24 en total, todas pasan con JDK 21 (10/11):
+        EstadoDocumentacionTest (9), SeleccionBolsinResponseTest (1), NotificacionBolsinLogTest (1)
+        y RegistroRecepcionBolsinIntegracionTest (13, H2 en memoria).
+[x] 26. Front: wizard con los pasos del CU, filtro por precinto / CM origen y cancelación.
+[x] 26b-26d. (09/11) Pasada contra SECUENCIA PATRON.pdf, endpoints synchronized y traspaso al grupo.
+[x] 27. Flujo descripto + TODOS los alternativos, probados de punta a punta (10/11):
+        A1/A2 (filtros en el front, reverificados el 10/11), A3 (sesión 02), A4 (sesión 03),
+        A5 (sesión 04, se muestra con el fixture datos-cmc.sql) y A6.
+[x] 27b. Transición RecibidaYRechazada -> ParaRedirigir (redirigir) del diagrama de clases.
+[x] 28. CU 29 (sesión 05): una notificación por CM de origen con la situación de su
+        documentación. Implementación que registra en el log (no se envían correos reales).
+[x] 28b. (10/11) Corrección O1: saveAndFlush antes de notificar (los errores de base aparecen
+        antes de emitir la notificación). Riesgo residual documentado (decisión 7).
+
+------------------------------------------------------------------------------
+ ETAPA 4 - UX y entrega
+------------------------------------------------------------------------------
+[N/A] 29. Fotos de moodboard, mapa de empatía y user journey de la Persona del EB.
+          NO APLICA para la Entrega 2 por comunicado docente (no se pide el apartado de UX).
+[N/A] 30. Fichas de patrones de GUI y documentación formal de UX.
+          NO APLICA para la Entrega 2 por comunicado docente.
+[ ] 30b. (Opcional, no evaluado) Mejora visual del front: aplicación profesional, moderna,
+        consistente e intuitiva, sin cambiar su funcionamiento (theme.js hoy es provisorio).
+[ ] 31. PDF de la Entrega 2 con carátula completa, SIN apartado formal de UX:
+        PPAI2026_3K5_G06_E2_Diseño.pdf. Debe incluir: identificación y justificación del patrón,
+        vista estática, vista dinámica, detalles de implementación (Java 21, Spring Boot 4.1.1 +
+        React, web, H2 + Spring Data JPA / Hibernate) y los diagramas complementarios (21b).
+[ ] 32. Preparar la defensa con GUIA_DEMOSTRACION.md (todos tienen que poder mostrar el patrón
+        en el código y hacer la demo, incluida la Parte 2 de A5).
+
+------------------------------------------------------------------------------
+ DECISIONES ABIERTAS
+------------------------------------------------------------------------------
+- PARA LA TUTORA: ver docs/decisiones_para_la_tutora.md (14 puntos). Los principales:
+  remito en A4 y A5, área obligatoria en A5, CMC por nombre, RNF 5 (CM destino) contra CU 28/29
+  (CM origen), qué pasa si falla la notificación, significado de A6, opción 4 visible siempre,
+  y cómo presentar las extensiones en los diagramas.
+- PARA EL GRUPO: declarar o no las 9 operaciones del State de otros CU (darDeBaja, enviar,
+  incluirEnBolsin, ...). AGENTS.md regla 7 dice que el abstracto declara todas; hoy están las 4
+  del CU 28. Se revisa aparte.
+- PARA EL GRUPO: AGENTS.md regla 1 ("primero se corrige el diagrama") contra CONTEXTO_IA.md
+  ("los diagramas no se cambian"). Mientras tanto, los originales no se tocan y las diferencias
+  se documentan en docs/diferencias_codigo_diagramas.md.
+- RESUELTO: estados de documentación guardados por nombre con un convertidor JPA.
+- RESUELTO: sesión activa cargada en data.sql (el CU no incluye iniciar sesión).
+- RESUELTO (09/11): los * de la secuencia representan loops y quedan así.
