@@ -6,6 +6,21 @@ Estos puntos requieren una decisión del grupo o una consulta con la tutora. En 
 la ERS no define qué hacer; en otros, distintas indicaciones no coinciden. La tabla aclara qué
 se hizo y qué alternativas existen.
 
+Además de las decisiones de la tabla, hay dos diferencias con las **reglas originales del
+grupo** que necesitan acuerdo:
+
+- La regla 1 de `AGENTS.md` indicaba corregir primero el diagrama cuando cambiaba el código.
+  Durante la implementación posterior se conservaron los diagramas, pero se añadieron
+  mensajes y parámetros para A3, A4, A5 y CU 29. La documentación de esas diferencias
+  no significa que ya se haya aprobado esa forma de presentarlas (**punto 11**).
+- La regla 7 pedía que `EstadoDocumentacion` declarara todas las operaciones dependientes
+  del estado. La primera versión del grupo ya implementaba solamente las cuatro del CU 28.
+  Esto sigue pendiente de decisión (**punto 10**).
+
+Los estados de remitos en A4/A5, la validación del área y el reconocimiento de la Central
+fueron decisiones tomadas al completar los alternativos. No se deben atribuir como
+definiciones previas del grupo ni como requisitos explícitos de la ERS.
+
 | # | Tema | Qué dice la ERS | Qué se implementó | Alternativa |
 |---|---|---|---|---|
 | 1 | Estado del remito en **A4** | No lo dice | **RecibidoYAceptadoParcial** si tiene documentación rechazada | RecibidoYAceptado |

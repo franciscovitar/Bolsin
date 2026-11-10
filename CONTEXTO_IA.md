@@ -14,6 +14,14 @@ carpeta del proyecto, y la IA siga con las mismas reglas y decisiones.
 
 ---
 
+**Antes de cambiar algo:** las reglas originales del grupo están en `AGENTS.md`.
+Las reglas 1 y 7 no se consideran reemplazadas por el hecho de haber documentado diferencias.
+Los diagramas definitivos se conservaron, pero los mensajes y parámetros agregados deben
+ser revisados con el grupo. La guía `GUIA_CAMBIOS_DEL_PROYECTO.md` explica qué trabajo
+ya existía y qué se agregó posteriormente.
+
+---
+
 ## 0. Cómo usarlo
 
 1. Cloná el repositorio del grupo (o descomprimí el .zip) y levantalo siguiendo

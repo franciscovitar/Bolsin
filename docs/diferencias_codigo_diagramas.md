@@ -8,6 +8,23 @@ implementar los flujos alternativos; otras necesitan validación con la tutora. 
 como coincidencias exactas.
 El detalle de cada flujo está en `docs/sesiones/Sesion_01` a `Sesion_05`.
 
+## Qué diferencias ya existían y cuáles se agregaron
+
+Antes de completar los alternativos, el grupo ya tenía el flujo normal, la estructura
+Pantalla–Gestor–entidades y el patrón State. En esa primera implementación ya existían
+diferencias como quién llama a `getNombre()`, el retorno de `Bolsin.buscarRemitos()` y
+los parámetros de `Bolsin.crearCambioEstado()`. Estas no se originaron al desarrollar A3–A5.
+
+Al completar A3, A4, A5 y la información del CU 29 se agregaron nuevas selecciones,
+mensajes, atributos y parámetros; por ejemplo, `Bolsin.actualizarEstado()` pasó a
+recibir los arreglos de documentación marcada. La implementación se amplió, pero los
+diagramas definitivos no se modificaron.
+
+El `AGENTS.md` inicial pedía actualizar primero el diagrama si cambiaba el código
+(regla 1) y declarar todas las operaciones dependientes del estado (regla 7).
+Por eso **dejar registradas estas diferencias no equivale a resolverlas**. Se deben
+acordar con el grupo y, cuando corresponda, consultar a la tutora.
+
 Categorías:
 - **A. Necesarias** para implementar A3, A4, A5 y el contenido del CU 29. El diagrama de
   secuencia sólo modela el flujo descripto.
@@ -63,8 +80,9 @@ llegan **vacíos** y el comportamiento es exactamente el del diagrama.
 
 ### A.4 Clases que no están en el diagrama
 
-- `InterfazNotificacionBolsin`, `NotificacionBolsinLog` y `NotificacionRecepcionBolsin`: el CU 29,
-  con el componente intercambiable que pide el RNF 5.
+- `InterfazNotificacionBolsin` y `NotificacionBolsinLog` ya estaban en la implementación inicial
+  del grupo. Después se agregó `NotificacionRecepcionBolsin` para incluir la situación de cada
+  documentación en los avisos del CU 29.
 - `ManejadorErrores`: traduce las excepciones a 400 y 409.
 - `EstadoDocumentacionConverter`: persistencia del estado por nombre.
 - Los records de `dto` y los repositorios: diseño de persistencia y de la interfaz.

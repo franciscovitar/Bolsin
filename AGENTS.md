@@ -5,10 +5,8 @@ salen de las consignas, de los apuntes de la cátedra y de los ejemplos que dio 
 (Consultorio con State, repositorio "Registrar Laboreo en Lotes").
 
 ## Consistencia con los diagramas
-1. Los diagramas de clases, secuencia y máquina de estados son la referencia de diseño del
-   grupo. Se mantienen sin cambios. Si el código tiene otro nombre, firma, responsabilidad
-   o mensaje, se registra en `docs/diferencias_codigo_diagramas.md` y se consulta su
-   consistencia; un comentario no convierte una diferencia en coincidencia.
+1. Las clases, atributos y métodos se llaman igual que en los diagramas de diseño (clases y
+   secuencia). Si al implementar hace falta cambiar algo, primero se corrige el diagrama.
 2. Pantalla = `@RestController` (boundary). Un endpoint por cada mensaje del actor a la pantalla,
    con el nombre del mensaje. Los `mostrarX()` del gestor son métodos de la pantalla que guardan lo
    que hay que mostrar; el endpoint lo devuelve como respuesta (records en `dto`).
@@ -21,13 +19,26 @@ salen de las consignas, de los apuntes de la cátedra y de los ejemplos que dio 
 ## Patrón State (Documentación)
 6. Documentacion es el contexto: delega en su estado actual cada mensaje que depende del estado y
    se pasa a sí misma como parámetro.
-7. El estado abstracto debería declarar las operaciones que dependen del estado, y los estados
-   concretos redefinen las transiciones permitidas. El código implementa las cuatro operaciones
-   del CU 28; las de otros CU que figuran en el diagrama están pendientes de definición.
-   No usar `if` ni `switch` sobre el nombre del estado.
+7. El estado abstracto declara todos los métodos dependientes del estado con comportamiento por
+   defecto (rechazar la transición). Cada estado concreto redefine sólo las transiciones que
+   salen de él en la máquina de estados. Nada de `if`/`switch` sobre el nombre del estado.
 8. El estado concreto que hace la transición cierra el CambioEstadoDocumentacion actual
    (`setFechaHoraFin`), crea el estado siguiente y el nuevo CambioEstadoDocumentacion con el
    empleado responsable, y se los asigna a la documentación (`setEstado`, `agregarCE`).
+
+## Situación actual (pendiente de acuerdo del grupo)
+
+Las reglas 1 y 7 de arriba se conservaron como estaban en el repositorio inicial del grupo.
+
+- **Regla 1:** en la implementación posterior se agregaron mensajes y parámetros para A3,
+  A4, A5 y CU 29 sin cambiar los diagramas definitivos. Las diferencias se anotaron en
+  `docs/diferencias_codigo_diagramas.md`, pero esto no reemplaza la regla original.
+  Falta acordar con el grupo y la tutora cómo resolver o presentar esa diferencia.
+- **Regla 7:** el código inicial ya tenía sólo las cuatro operaciones del CU 28 en
+  `EstadoDocumentacion`; el diagrama también muestra otras de distintos CU.
+  Sigue pendiente decidir si deben declararse aunque esos CU no se implementen.
+
+La documentación de estas diferencias no implica que estén aprobadas.
 
 ## Código
 9. 100 % orientado a objetos, corto y sin repeticiones: nada de archivos largos para lo que se

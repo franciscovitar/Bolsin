@@ -108,7 +108,21 @@ En la última revisión con Codex:
 
 A1 y A2 ya se habían probado también en el front. **No quedaron errores reproducibles pendientes en esa revisión.**
 
-## 8. Dónde mirar si quieren entender algo
+## 8. Qué queda por acordar con el grupo
+
+Hay algunas diferencias que conviene revisar antes de presentar la entrega. **Que el sistema funcione y que una diferencia esté comentada no significa que el grupo o la tutora ya la hayan aprobado.**
+
+**1. Código y diagramas.** La regla 1 del `AGENTS.md` original decía que, si había que cambiar una clase o un mensaje, primero se corregía el diagrama. Al implementar A3, A4, A5 y ampliar CU 29 se agregaron mensajes y parámetros sin modificar los diagramas definitivos. Por ejemplo, `Bolsin.actualizarEstado()` tiene ocho parámetros en Java y cuatro en el diagrama. Se dejaron las diferencias por escrito para no perderlas, pero el grupo tiene que acordar cómo presentarlas y consultar a la tutora si hace falta.
+
+**2. Operaciones del State.** La regla 7 original pedía declarar todas las operaciones dependientes del estado en `EstadoDocumentacion`. El código sólo tiene las cuatro del CU 28, mientras que el diagrama de clases incluye otras operaciones de otros CU. **Esto ya era así en la primera versión del grupo**, no apareció con los alternativos. Falta decidir si esas operaciones deberían declararse igualmente, aunque no se desarrollen los otros casos de uso.
+
+**3. Decisiones tomadas para completar A3, A4 y A5.** La ERS no define con precisión todos los casos. Por eso se eligieron, de manera provisional, los estados de los remitos en A4 y A5, el tratamiento de un remito con toda la documentación marcada, la validación del área de destino y la forma de reconocer a la Central. Son decisiones de implementación que todavía conviene validar; no requisitos confirmados de la cátedra.
+
+**4. CU 29.** El grupo ya había dejado la notificación simulada en la consola del back. Después se amplió para mostrar el resultado de cada documentación y separar los avisos por CM de origen. No se agregó envío real de correos. También queda por aclarar la diferencia entre el RNF 5 y los CU 28/29 sobre a quién notificar.
+
+Las diferencias técnicas están detalladas en `docs/diferencias_codigo_diagramas.md` y las decisiones abiertas en `docs/decisiones_para_la_tutora.md`. **Hasta que el grupo las revise, no se consideran decisiones definitivas.**
+
+## 9. Dónde mirar si quieren entender algo
 
 Para encontrar cada parte sin perderse entre archivos, estos son los lugares principales:
 
