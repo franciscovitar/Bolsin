@@ -1,192 +1,126 @@
-# Guía de cambios del CU 28 — Explicada para el grupo
+# Cambios que hice al TP de Bolsines
 
-**PPAI 2026 · Diseño de Sistemas de Información · 3K5 · Grupo 06**  
-**Caso:** Bolsines · **CU 28:** Registrar recepción de bolsín  
-**Versión explicada:** rama `cierre-cu28`, commit `86ef89e` (10/11/2026).  
-**Comparación:** trabajo inicial del grupo en [PPAIDSIG6](https://github.com/juangedda/PPAIDSIG6), commit `d579662` (09/11/2026).
+Les dejo acá lo que fui cambiando del **CU 28 (Registrar recepción de bolsín)**, más que nada para que todos sepamos qué se agregó respecto de la versión que ya teníamos y dónde encontrarlo en el código si hace falta revisar algo.
 
-> **Para qué sirve esta guía:** que cualquiera del grupo, incluso quien no programó, entienda qué había antes, qué se agregó, por qué y dónde encontrarlo. **No reemplaza la ERS, los diagramas UML ni la documentación de la entrega.** Los tres diagramas de `docs/diagramas/` son los definitivos y se conservaron sin cambios.
+**Primero, algo importante:** no hice el proyecto de cero. La estructura del back y del front, el flujo normal, el patrón State, los diagramas y varias partes del CU ya estaban hechas por el grupo. Trabajé sobre eso.
 
-## 1. Resumen en un minuto
+Tampoco modifiqué los diagramas de clases, secuencia ni máquina de estados. **Siguen siendo los mismos que habíamos dejado como definitivos.**
 
-El grupo ya había construido el proyecto con **Java 21, Spring Boot, React y H2**. Tenía implementado el **flujo normal** del CU 28: elegir un bolsín, controlar su contenido, indicar que llegó todo correctamente, confirmar y guardar la recepción. También contaba con los filtros **A1 y A2**, la cancelación **A6**, la estructura del patrón **State** y ocho pruebas. La notificación asociada al CU 29 avisaba en un log que se había recibido el bolsín, pero no detallaba la situación de cada documentación.
+## 1. Qué estaba hecho y qué faltaba
 
-Sobre esa base se hicieron estas ampliaciones:
+Cuando empecé ya se podía recibir un bolsín si llegaba toda su documentación correctamente. El encargado elegía el bolsín, veía los remitos y documentos, seleccionaba la primera opción de recepción, confirmaba y el sistema guardaba los cambios en la base.
 
-1. **A3:** registrar documentación que **no llegó**.
-2. **A4:** registrar documentación que **no corresponde** a la comisión médica destino.
-3. **A5:** marcar documentación que debe ir a **otra área de la Comisión Médica Central**.
-4. **CU 29:** informar a **cada comisión médica de origen** el resultado de su propia documentación.
-5. **Correcciones:** completar una transición State, reforzar validaciones y asegurar que se ejecuten los cambios SQL antes de notificar.
-6. **Pruebas:** pasar de **8 a 25 pruebas automatizadas**.
-7. **Trazabilidad UML:** comentarios en **27 clases Java** para relacionar código, diagrama de clases, secuencia y máquina de estados.
-8. **Interfaz:** mejorar la apariencia institucional y adaptar las cinco pantallas a escritorio y móvil.
+También estaban los filtros por precinto y comisión médica de origen (A1 y A2), la opción de no confirmar (A6), las clases del patrón State y la notificación básica del CU 29, que por ahora se muestra en la consola del back.
 
-**Resultado reportado de la validación final:** 25 pruebas Java exitosas con JDK 21, build de React/Vite exitoso, recorridos normales y alternativos probados en Chrome de escritorio y móvil emulado, y consola limpia. Esta es una **versión candidata final del desarrollo**, no la entrega académica definitiva.
+Lo principal que faltaba era hacer funcionar las otras tres opciones de recepción: **A3, A4 y A5**. Antes aparecían en la pantalla, pero no se podían completar.
 
-## 2. Qué pasa ahora con cada flujo
+## 2. Las tres opciones de recepción que agregué
 
-| Flujo | Situación | Qué hace el sistema | ¿Ya existía originalmente? |
-|---|---|---|---|
-| **Normal** | Llegó todo como estaba registrado | Documentación → `RecibidaYAceptada`; remitos → `RecibidoYAceptado`; bolsín → `RecibidoEnCMDestino` | **Sí** |
-| **A1** | No se encuentra el número de precinto buscado | El filtro avisa que no hay coincidencia; no modifica datos | **Sí, en el front** |
-| **A2** | No se encuentra la comisión médica origen buscada | El filtro avisa que no hay coincidencia; no modifica datos | **Sí, en el front** |
-| **A3** | Falta una parte de la documentación | Lo marcado → `NoRecibida`; el resto → `RecibidaYAceptada`; remito afectado → `RecibidoYAceptadoParcial` | **Se agregó** |
-| **A4** | Hay documentación que no corresponde al destino | Lo marcado → `RecibidaYRechazada`; el resto → `RecibidaYAceptada`; remito afectado → `RecibidoYAceptadoParcial` | **Se agregó** |
-| **A5** | Hay que redirigir documentación dentro de la Central | Lo marcado → `ParaRedirigir`; el resto → `RecibidaYAceptada`; remitos → `RecibidoYAceptado` | **Se agregó** |
-| **A6** | El encargado no confirma | No guarda cambios ni envía notificaciones | **Sí** |
+### A3: cuando falta documentación
 
-**Ejemplo concreto de A3:** al recibir el bolsín **5001**, el encargado marca que la documentación **2** no llegó. Al confirmar, esa documentación queda `NoRecibida`, las documentaciones 1 y 3 quedan `RecibidaYAceptada`, el remito 1001 queda parcialmente aceptado y el 1002 aceptado. El sistema guarda responsable, fecha y hora.
+Si llega un bolsín pero faltan algunos documentos, ahora el encargado puede marcar cuáles no llegaron.
 
-**Importante:** los estados finales del remito en A4 y A5, y algunos casos límite, son **decisiones provisionales del grupo** porque la ERS no los define de manera explícita. Ver `docs/decisiones_para_la_tutora.md`.
+Por ejemplo, con el bolsín **5001**, si marcamos la documentación **2**:
+- La 2 pasa a **NoRecibida**.
+- Las otras pasan a **RecibidaYAceptada**.
+- El remito que tiene ese documento queda **RecibidoYAceptadoParcial**.
+- El bolsín queda **RecibidoEnCMDestino**, porque la recepción se registró.
 
-## 3. ¿Dónde está cada parte en el código y en los diagramas?
+O sea, ya no hace falta tratar toda la documentación como si hubiera llegado igual.
 
-El recorrido conceptual es:
+### A4: cuando hay documentación que no corresponde
 
-`Encargado de Bolsines → Pantalla → Gestor → Bolsín → Remito → DetalleRemito → Documentación → Estado concreto`
+Funciona parecido al anterior, pero en lugar de marcar lo que falta, el encargado marca los documentos que **llegaron pero no corresponden a esa comisión médica**.
 
-| En el diseño UML | Archivo principal del código | Para entenderlo fácilmente |
-|---|---|---|
-| **Pantalla / «boundary»** | `back/src/main/java/ppai/bolsines/pantalla/PantallaRegistroRecepcionBolsines.java` | Recibe los mensajes del actor mediante la API REST y devuelve respuestas a React |
-| **Gestor / «control»** | `.../gestor/GestorRegistroRecepcionBolsines.java` | Coordina el caso de uso; recuerda el bolsín, la opción y la documentación marcada |
-| **Bolsín** | `.../modelo/bolsin/Bolsin.java` | Conoce sus remitos, actualiza su estado y su historial |
-| **Remito** | `.../modelo/remito/Remito.java` | Conoce sus detalles y determina si queda aceptado o parcialmente aceptado |
-| **DetalleRemito** | `.../modelo/remito/DetalleRemito.java` | Sabe qué documentación contiene y qué transición debe pedirle |
-| **Documentación — CONTEXT** | `.../modelo/documentacion/Documentacion.java` | Recibe `recibirYAceptar`, `recibirYRechazar`, `registrarNoRecibida` o `redirigir` y **delega** al estado actual |
-| **EstadoDocumentacion — STATE abstracto** | `.../modelo/documentacion/EstadoDocumentacion.java` | Define esas operaciones; rechaza las no permitidas y comparte `cambiarEstado()` |
-| **Estados concretos — CONCRETE STATE** | `.../modelo/documentacion/EnBolsinEnviado.java` y demás clases del mismo paquete | Cada estado determina qué transiciones permite y cuál es el siguiente estado |
-| **Historial** | `.../modelo/documentacion/CambioEstadoDocumentacion.java` | Conserva inicio, fin, estado y empleado responsable |
-| **«include» CU 29** | `.../notificacion/InterfazNotificacionBolsin.java` y `NotificacionBolsinLog.java` | Construye y registra un aviso por CM de origen; **no envía emails reales** |
+Los marcados pasan a **RecibidaYRechazada** y el resto a **RecibidaYAceptada**.
 
-En la tabla, `.../` significa `back/src/main/java/ppai/bolsines/`.
+En este caso se decidió dejar como **RecibidoYAceptadoParcial** al remito que tenga documentos rechazados. La ERS no lo aclara del todo, así que es una decisión que conviene consultar con la tutora.
 
-**Para seguir una llamada del diagrama de secuencia:** buscá, por ejemplo, `tomarConfirmacionRegistro` en la Pantalla y luego en el Gestor. El Gestor invoca `actualizarBolsin` y se recorre la cadena de entidades hasta llegar al estado concreto.
+### A5: cuando hay que redirigir documentación
 
-**Para seguir una flecha de la máquina de estados:** buscá su método en `EnBolsinEnviado.java`. Por ejemplo, `registrarNoRecibida` termina llamando al método común `cambiarEstado(..., new NoRecibida())`. No se decide el estado siguiente comparando cadenas de texto; se usa polimorfismo.
+Esta opción es para los bolsines que llegan a la **Comisión Médica Central**. Si un documento tiene que ir a otra área de la Central, se lo puede marcar para redirigir.
 
-Los comentarios agregados en las 27 clases citan expresamente mensajes, transiciones, roles de State y diferencias de firmas con los UML.
+Los documentos marcados pasan a **ParaRedirigir** y los demás se aceptan normalmente. Para redirigir un documento, el sistema comprueba que tenga un área de destino cargada.
 
-### Los tres diagramas definitivos
+En la demo normal estamos con Laura, de Córdoba, así que **A5 no se puede ejecutar ahí**. Para probarla agregué datos de prueba separados, con Ana Ruiz y el bolsín **5006** destinado a la Central. Esos datos no reemplazan los de la demo habitual.
 
-- `docs/diagramas/DIAGRAMA CLASES.pdf`: clases, métodos, asociaciones y roles.
-- `docs/diagramas/SECUENCIA PATRON.pdf`: mensajes y responsabilidades del **flujo descripto**, especialmente la actualización con State.
-- `docs/diagramas/MaquinaEstadosPPAI (1).pdf`: estados y transiciones de Documentación.
+Por ahora, en A5 el remito queda **RecibidoYAceptado**, porque la documentación llegó y la redirección es interna. También es una decisión a validar con la tutora.
 
-**No se editaron esos diagramas.** A3, A4, A5 y el detalle de CU 29 requieren mensajes y parámetros adicionales que no aparecen en la secuencia del flujo descripto. Eso **no debe presentarse como una coincidencia exacta**. Todas las diferencias están explicadas en `docs/diferencias_codigo_diagramas.md`.
+**En A3, A4 y A5 reutilicé la misma pantalla para marcar documentación**, así no hay tres componentes distintos haciendo prácticamente lo mismo. En los tres casos el encargado revisa lo marcado y tiene que confirmar antes de que se guarde.
 
-## 4. Cambios explicados por tema
+## 3. También completé la notificación del CU 29
 
-### A. Selección de documentación para A3, A4 y A5
+Antes la consola del back mostraba algo como que se recibió el bolsín, pero no decía qué pasó con los documentos.
 
-**Antes:** se elegía la opción de recepción y se podía confirmar sin indicar documentos específicos.
+Ahora, cuando se confirma, se informa **qué documentación se aceptó, cuál faltó, cuál se rechazó o cuál quedó para redirigir**.
 
-**Ahora:** si se elige A3, A4 o A5, aparece un paso donde se marca **exactamente qué documentación** presenta la situación elegida. Se usa su número identificador, no su asunto (dos documentos podrían tener el mismo asunto).
+Además, si un bolsín tiene remitos de distintas comisiones médicas de origen, se prepara un aviso para cada una con **sus propios documentos**, sin mezclar información.
 
-**Dónde verlo:** `front/src/components/pasos/SeleccionDocumentacion.jsx`, `front/src/App.jsx`, los DTO del backend y `GestorRegistroRecepcionBolsines.tomarSeleccionDocumentacion`.
+**Ojo:** no se están mandando emails de verdad. Por ahora se sigue mostrando todo en el log del backend, igual que antes, pero con la información completa.
 
-**Por qué está bien distribuido:** el Gestor valida qué eligió el actor, pero la decisión de transición se delega hacia `DetalleRemito` y finalmente hacia `Documentacion` y su estado concreto. Así se respetan **Experto, Controlador y State**.
+Hay un detalle de la ERS para consultar: en los CU 28 y 29 habla de avisar a las **CM de origen**, pero en el RNF 5 menciona a la **CM destino**. En el código seguimos lo que dicen los casos de uso.
 
-### B. Transición que faltaba en State
+## 4. Qué cambié del código y del patrón State
 
-Se agregó `RecibidaYRechazada.redirigir()` para permitir el paso **RecibidaYRechazada → ParaRedirigir**, ya dibujado en la máquina de estados. También se probó el cierre del estado anterior y la creación del nuevo cambio con el empleado correcto.
+El patrón State ya estaba armado, así que la idea fue **usar lo que había**, no reemplazarlo.
 
-**Dónde verlo:** `modelo/documentacion/RecibidaYRechazada.java` y `EstadoDocumentacionTest.java`.
+Para ubicarlo fácilmente:
 
-### C. Notificación del CU 29 más completa
+- **Documentacion** es la clase que recibe operaciones como `recibirYAceptar()` o `registrarNoRecibida()`. No decide sola qué estado viene después.
+- **EstadoDocumentacion** define esas operaciones y tiene el método común `cambiarEstado()`.
+- Los **estados concretos**, por ejemplo `EnBolsinEnviado`, determinan qué transición se puede hacer y a qué estado pasa la documentación.
+- **CambioEstadoDocumentacion** registra el historial: cuándo empezó y terminó un estado, y qué empleado hizo el cambio.
 
-**Antes:** se registraba en el log un aviso general de que había llegado un bolsín.
+También agregué una transición que estaba en la máquina de estados pero faltaba en Java: **RecibidaYRechazada → ParaRedirigir**, mediante `redirigir()`.
 
-**Ahora:** se prepara una notificación **por cada CM de origen de los remitos** y se incluye sólo su documentación, con número, asunto y estado final. Se probaron dos orígenes distintos sin mezclar sus documentos.
+Para A3, A4 y A5 hubo que agregar parámetros y mensajes nuevos. Esto hace que algunas firmas del código no sean exactamente iguales a las del diagrama de secuencia, porque ese diagrama muestra el **flujo normal** y no todos los alternativos. **No cambié el diagrama para que parezca que coincide**: dejé las diferencias anotadas en `docs/diferencias_codigo_diagramas.md`.
 
-**Dónde verlo:** `GestorRegistroRecepcionBolsines.llamarCasoUso29()`, `modelo/bolsin/Bolsin.java`, `modelo/remito/Remito.java`, `notificacion/NotificacionRecepcionBolsin.java` y `NotificacionBolsinLog.java`.
+Además, comenté **27 clases Java** explicando con qué clase, mensaje o transición de los diagramas se relacionan. La idea es que cualquiera pueda abrir el diagrama y encontrar en el código dónde se implementó.
 
-**No confundir:** la notificación sigue siendo **simulada en el log**. No se integró un servicio real de correo.
+## 5. Algunas correcciones que hice
 
-### D. Persistencia y correcciones de seguridad funcional
+Aparte de completar los flujos, fui encontrando cosas que convenía corregir:
 
-- Se utiliza `saveAndFlush` antes de la notificación para forzar el SQL antes del aviso. **No garantiza** que un eventual fallo posterior del commit pueda deshacer una notificación ya emitida.
-- Se valida que la documentación marcada pertenezca al bolsín, que no quede una selección vacía y, en A5, que el destino sea la **CMC** y que el documento a redirigir tenga área registrada.
-- Se corrigió un error por el cual, al seleccionar **otro bolsín** por la API, podían reutilizarse la opción y las marcas del anterior. Ahora se invalidan; una prueba comprueba el rechazo, la ausencia de cambios y la posibilidad de continuar correctamente.
+- **Cambiar de bolsín:** si se elegía una opción para el 5001 y después, desde la API, se seleccionaba el 5005, podían quedar guardadas las selecciones anteriores. Ahora se limpian, así no se puede confirmar otro bolsín sin elegirle su propia opción.
+- **Validaciones:** el sistema controla que los documentos marcados realmente pertenezcan al bolsín, que se haya seleccionado al menos uno cuando corresponde y que en A5 exista el área de destino.
+- **Errores al guardar:** se usa `saveAndFlush()` antes de notificar para que los errores al ejecutar el SQL aparezcan antes del aviso. Esto mejora el orden de la operación, aunque no elimina todos los riesgos posibles de una falla posterior del commit.
+- **Cancelación:** si se elige no confirmar, no se cambian estados ni se generan notificaciones.
 
-**Dónde verlo:** `GestorRegistroRecepcionBolsines.java` y `RegistroRecepcionBolsinIntegracionTest.java`.
+No agregué funcionalidades de otros casos de uso. Las operaciones de State que aparecen en el diagrama pero pertenecen a otros CU siguen sin implementarse, porque el alcance de este TP es el CU 28.
 
-### E. Pruebas más completas
+## 6. El front también quedó actualizado
 
-**Antes:** ocho pruebas del patrón State.
+Le di una pasada de diseño a las cinco pantallas. Mantiene el mismo funcionamiento, pero ahora tiene colores y componentes más consistentes, se entiende mejor el contenido de los remitos, se ve claramente qué documentación se marcó y se adapta tanto a computadora como a celular.
 
-**Ahora:** 25 pruebas automatizadas de State, DTO, notificaciones e integración con H2 en memoria. Cubren los flujos principales y alternativos, sus estados e historiales, cancelación, destinatarios, validaciones y correcciones.
+Los archivos principales son `front/src/theme.js`, `front/src/components/layout/MainLayout.jsx` y los componentes de `front/src/components/pasos/`.
 
-Las pruebas **no sustituyen** la demostración en la interfaz: también se completó una verificación en Chrome de escritorio (1440×900) y móvil emulado (390×844), con los flujos normal, A3, A4, A5 y A6. El build de Vite terminó bien; su aviso por tamaño del bundle no impidió compilar.
+Esto fue solamente una mejora de la interfaz. **No hice el apartado formal de UX**, porque los profes avisaron que no lo piden para la segunda entrega.
 
-### F. Mejora visual
+## 7. Cómo quedó probado
 
-**Antes:** interfaz de cinco pasos con un tema básico/provisorio.
+Al principio había **8 pruebas** del State. Ahora hay **25 pruebas automatizadas**, incluyendo pruebas de las opciones nuevas, notificaciones, validaciones, historial de estados y persistencia en H2.
 
-**Ahora:** estilo institucional azul, encabezados consistentes, mejor lectura de remitos y documentación, tarjetas para elegir opciones, selección resaltada, confirmación más ordenada y adaptación a celular.
+En la última revisión con Codex:
+- Pasaron las **25 pruebas** con Java 21.
+- Compiló el frontend con `npm run build`.
+- Se probaron el flujo normal, A3, A4, A5 y A6 en Chrome, tanto en escritorio como en móvil emulado.
+- Los mensajes y llamados a la API funcionaron, y la consola quedó sin errores después de recargar.
 
-**Dónde verlo:** `front/src/theme.js`, `front/src/components/layout/MainLayout.jsx`, `front/src/components/comunes/EncabezadoPaso.jsx`, `DatosDocumento.jsx` y los componentes de `front/src/components/pasos/`.
+A1 y A2 ya se habían probado también en el front. **No quedaron errores reproducibles pendientes en esa revisión.**
 
-No se cambió la lógica del caso de uso ni los contratos de API. **El comunicado docente excluyó el apartado formal de UX para la Entrega 2**: esta fue una mejora visual, no una entrega de moodboard, mapa de empatía o user journey.
+## 8. Dónde mirar si quieren entender algo
 
-## 5. ¿Cómo mostrarlo sin perderse?
+Para no llenar este archivo de nombres de métodos, dejo los lugares principales:
 
-Con **JDK 21** y Node.js compatibles, abrir dos terminales desde la raíz del proyecto:
+- **`GestorRegistroRecepcionBolsines.java`**: coordina los pasos, guarda lo que eligió el encargado y confirma la recepción.
+- **`Bolsin.java`, `Remito.java` y `DetalleRemito.java`**: van delegando la actualización hasta llegar a cada documento.
+- **`Documentacion.java`, `EstadoDocumentacion.java` y los estados concretos**: ahí se ve bien el patrón State.
+- **`RegistroRecepcionBolsinIntegracionTest.java`**: están las pruebas de los flujos y de lo que se guarda en la base.
+- **`GUIA_DEMOSTRACION.md`**: explica cómo probar el CU completo y cómo levantar el caso especial de A5.
+- **`COMO_EJECUTAR.txt`**: tiene los pasos para iniciar el back y el front.
+- **`docs/decisiones_para_la_tutora.md`**: están las dudas que todavía conviene consultar.
+- **`docs/diferencias_codigo_diagramas.md`**: están los cambios que no aparecen tal cual en los diagramas.
 
-```powershell
-# Terminal 1
-cd back
-.\mvnw.cmd clean install
-.\mvnw.cmd spring-boot:run
-```
+En resumen, **el flujo normal que ya teníamos se mantuvo**, se completaron A3, A4 y A5, se mejoró el CU 29, se corrigieron algunos problemas, se agregaron pruebas y se dejó más clara la relación entre el código y los diagramas.
 
-```powershell
-# Terminal 2
-cd front
-npm ci
-npm run dev
-```
-
-Abrir `http://localhost:3000`. La demo normal usa **Laura Gómez / Comisión Médica Córdoba** y los precintos **5001, 5002 y 5005**. Para probar A3, por ejemplo, elegir 5001, opción 2, marcar la documentación 2 y confirmar. Para no modificar la demo durante un ensayo, elegir **No confirmar**.
-
-**A5 requiere datos específicos de la Central**, que están aislados en `back/src/test/resources/datos-cmc.sql`. La forma exacta de iniciar ese escenario y volver a la demo normal está explicada en `GUIA_DEMOSTRACION.md` y `COMO_EJECUTAR.txt`.
-
-La base H2 normal se recrea con los datos iniciales al arrancar el backend; para comprobar persistencia entre reinicios hay una variante documentada en `GUIA_DEMOSTRACION.md`. Eso es una configuración de la demo, no una limitación inherente de H2.
-
-## 6. Qué quedó igual y qué NO se hizo
-
-- **Los tres diagramas UML definitivos se mantienen intactos.**
-- **Sólo se implementó el CU 28**, incluida la integración con CU 29 necesaria para ese flujo. No se implementaron otros casos de uso.
-- El patrón State se aplica a **Documentación**, no a las entidades catálogo `EstadoBolsin` y `EstadoRemito`.
-- Las otras operaciones de State que aparecen en el diagrama para casos de uso diferentes **no se implementaron**. La diferencia está documentada.
-- No se envían emails reales y no se implementó autenticación nueva: se usa la sesión precargada de la demo.
-- La pantalla y el gestor están concebidos para un encargado usando una instancia a la vez; **no es una solución multiusuario de producción**.
-- No se creó el PDF de entrega ni se alteraron los artefactos de la cátedra.
-
-## 7. Decisiones para conversar con la tutora o el grupo
-
-El proyecto funciona para los escenarios probados, pero siguen siendo **decisiones de diseño pendientes de validación**, no requisitos explícitos de la ERS:
-
-- Estado final de remitos en **A4** y **A5**, incluido el caso de un remito con todo marcado.
-- Exigir un área registrada en A5 y detectar la Central por su **nombre**.
-- A quién notificar: los **CU 28/29 indican CM de origen**, mientras que el **RNF 5 menciona CM destino**. El código sigue a los casos de uso.
-- Reglas sobre confirmación/cancelación, transacciones, sesiones y operaciones State de otros CU.
-- Cómo explicar las diferencias entre diagramas definitivos y los métodos adicionales del código.
-
-La lista completa, con contexto y alternativas, está en **`docs/decisiones_para_la_tutora.md`**.
-
-## 8. Dónde mirar si alguien necesita más detalle
-
-| Pregunta | Archivo recomendado |
-|---|---|
-| ¿Cómo ejecutamos el sistema? | `COMO_EJECUTAR.txt` |
-| ¿Cómo hacemos una demostración del CU y de A5? | `GUIA_DEMOSTRACION.md` |
-| ¿Qué cambió respecto del UML? | `docs/diferencias_codigo_diagramas.md` |
-| ¿Por qué se eligieron ciertos estados o reglas? | `docs/decisiones_para_la_tutora.md` |
-| ¿Qué se hizo en cada etapa de programación? | `docs/sesiones/Sesion_01…Sesion_06` |
-| ¿Qué quedó pendiente del grupo? | `PENDIENTE.txt` |
-| ¿Cómo se relaciona cada método Java con el UML? | Comentarios dentro de `back/src/main/java/ppai/bolsines/` |
-
----
-
-**Conclusión:** el grupo construyó la base funcional y el modelado. Después se completaron A3–A5, se amplió la notificación, se reforzaron las validaciones y las pruebas, se añadieron comentarios de trazabilidad y se mejoró la presentación. El desarrollo quedó **validado como candidato final**, sujeto a las decisiones académicas pendientes y a la preparación de la entrega por parte del grupo.
+Por nuestra parte el desarrollo está **listo como versión candidata final**. Lo que queda es que el grupo valide las decisiones pendientes y prepare los materiales de entrega. Los diagramas definitivos no se tocaron.
